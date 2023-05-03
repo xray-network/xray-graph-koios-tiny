@@ -37,7 +37,7 @@ services:
     volumes:
       - node-db:/db
       - node-ipc:/ipc
-      - ./config/network/${NETWORK:-mainnet}:/config
+      - ./cardano-configurations/network/${NETWORK:-mainnet}:/config
 
   cardano-db-sync:
     image: inputoutput/cardano-db-sync:${CARDANO_DB_SYNC_VERSION:-13.1.0.2}
@@ -58,7 +58,7 @@ services:
       - postgres_user
       - postgres_db
     volumes:
-      - ./config/network/${NETWORK:-mainnet}:/config
+      - ./cardano-configurations/network/${NETWORK:-mainnet}:/config
       - db-sync-data:/var/lib/cexplorer
       - node-ipc:/node-ipc
     restart: on-failure
@@ -119,6 +119,32 @@ services:
     ports:
       - ${API_PORT:-3100}:3100
     restart: on-failure
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  postgrest:
+    build:
+      context: .
+    ports:
+      - ${POSTGREST_PORT:-8050}:8050
+    depends_on:
+      - "postgres"
+    environment:
+      - SETUP=false
+      - NETWORK=${NETWORK:-mainnet}
+      - PGHOST=${PGHOST:-postgres}
+      - PGPORT=${PGPORT:-5432}
+      - POSTGRES_DB_FILE=/run/secrets/postgres_db
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+      - POSTGRES_USER_FILE=/run/secrets/postgres_user
+    restart: on-failure
+    secrets:
+      - postgres_db
+      - postgres_password
+      - postgres_user
     logging:
       driver: "json-file"
       options:

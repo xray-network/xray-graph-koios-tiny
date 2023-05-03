@@ -1,0 +1,16 @@
+FROM alpine:latest
+
+RUN apk add --no-cache nano sudo bash postgresql-client
+RUN mkdir -p /etc/sudoers.d \
+    && echo "postgres ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/postgres \
+    && chmod 0440 /etc/sudoers.d/postgres
+
+WORKDIR /home/postgres
+
+COPY --from=postgrest/postgrest /bin/postgrest /bin
+COPY . .
+
+RUN chown -R postgres:postgres /home/postgres
+USER postgres
+
+CMD exec ./run.sh
