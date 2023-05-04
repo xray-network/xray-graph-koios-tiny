@@ -1,18 +1,23 @@
 #!/usr/bin/env bash
 
-SETUP=true
-
 WORKDIR=/home/postgres
-DB_NAME=$(cat "$POSTGRES_DB_FILE")
-DB_USER=$(cat "$POSTGRES_USER_FILE")
-DB_PASSWORD=$(cat "$POSTGRES_PASSWORD_FILE")
+DB_NAME=$(< "$POSTGRES_DB_FILE")
+DB_USER=$(< "$POSTGRES_USER_FILE")
+DB_PASSWORD=$(< "$POSTGRES_PASSWORD_FILE")
 
 PGDATABASE=${DB_NAME}
 export PGRST_DB_URI=postgres://${DB_USER}:${DB_PASSWORD}@${PGHOST}:${PGPORT}/${PGDATABASE}
-export PGPASSFILE=${WORKDIR}/.pgpass
 
-CRON_SCRIPTS_DIR=./koios-artifacts/files/grest/cron/jobs/
+DB_SCRIPTS_DIR=./guild-operators/scripts/grest-helper-scripts/db-scripts
+RPC_SCRIPTS_DIR=./koios-artifacts/files/grest/rpc
+RPC_EXTRA_SCRIPTS_DIR=./rpc-extra
+CRON_SCRIPTS_DIR=./koios-artifacts/files/grest/cron/jobs
 CRON_DIR=/etc/cron.d
+SHELLEY_GENESIS_JSON=./cardano-configurations/network/${NETWORK}/genesis/shelley.json
+ALONZO_GENESIS_JSON=./cardano-configurations/network/${NETWORK}/genesis/alonzo.json
+
+echo "${PGHOST}:${PGPORT}:${PGDATABASE}:${DB_USER}:${DB_PASSWORD}" > $PGPASSFILE
+chmod 0600 $PGPASSFILE
 
 err_exit() {
   printf "${FG_RED}ERROR${NC}: ${1}\n" >&2
@@ -36,9 +41,9 @@ check_db_status() {
 }
 
 reset_grest_schema() {
-  local reset_sql_url="${DB_SCRIPTS_URL}/reset_grest.sql"
+  local reset_sql_url="${DB_SCRIPTS_DIR}/reset_grest.sql"
 
-  if ! reset_sql=$(curl -s -f -m "${CURL_TIMEOUT}" "${reset_sql_url}" 2>&1); then
+  if ! reset_sql=$(< $reset_sql_url); then
     err_exit "Failed to get reset grest SQL from ${reset_sql_url}."
   fi
   printf "\nResetting grest schema..."
@@ -46,9 +51,9 @@ reset_grest_schema() {
 }
 
 setup_db_basics() {
-  local basics_sql_url="${DB_SCRIPTS_URL}/basics.sql"
+  local basics_sql_url="${DB_SCRIPTS_DIR}/basics.sql"
 
-  if ! basics_sql=$(curl -s -f -m "${CURL_TIMEOUT}" "${basics_sql_url}" 2>&1); then
+  if ! basics_sql=$(< $basics_sql_url); then
     err_exit "Failed to get basic db setup SQL from ${basics_sql_url}"
   fi
   printf "\nAdding grest schema if missing and granting usage for web_anon..."
@@ -56,10 +61,30 @@ setup_db_basics() {
   return 0
 }
 
-setup_authenticator() {
-  printf "\n[Re]Allowing Postgres access.."
-  echo "${PGHOST}:${PGPORT}:${PGDATABASE}:${DB_USER}:${DB_PASSWORD}" > $PGPASSFILE
-  chmod 0600 $PGPASSFILE
+insert_genesis_table_data() {
+  local alonzo_genesis=$1
+  shift
+  local shelley_genesis=("$@")
+
+  psql "${PGDATABASE}" -c "INSERT INTO grest.genesis VALUES (
+    '${shelley_genesis[4]}', '${shelley_genesis[2]}', '${shelley_genesis[0]}',
+    '${shelley_genesis[1]}', '${shelley_genesis[3]}', '${shelley_genesis[5]}',
+    '${shelley_genesis[6]}', '${shelley_genesis[7]}', '${shelley_genesis[8]}',
+    '${shelley_genesis[9]}', '${shelley_genesis[10]}', '${alonzo_genesis}'
+  );" > /dev/null
+}
+
+insert_genesis_table_data() {
+  local alonzo_genesis=$1
+  shift
+  local shelley_genesis=("$@")
+
+  psql "${PGDATABASE}" -c "INSERT INTO grest.genesis VALUES (
+    '${shelley_genesis[4]}', '${shelley_genesis[2]}', '${shelley_genesis[0]}',
+    '${shelley_genesis[1]}', '${shelley_genesis[3]}', '${shelley_genesis[5]}',
+    '${shelley_genesis[6]}', '${shelley_genesis[7]}', '${shelley_genesis[8]}',
+    '${shelley_genesis[9]}', '${shelley_genesis[10]}', '${alonzo_genesis}'
+  );" > /dev/null
 }
 
 populate_genesis_table() {
@@ -75,23 +100,10 @@ populate_genesis_table() {
     .slotLength,
     .maxKESEvolutions,
     .securityParam
-    ] | @tsv' <"${GENESIS_JSON}")
+    ] | @tsv' <"${SHELLEY_GENESIS_JSON}")
   ALGENESIS="$(jq -c . <"${ALONZO_GENESIS_JSON}")"
 
   insert_genesis_table_data "${ALGENESIS}" "${SHGENESIS[@]}"
-}
-
-insert_genesis_table_data() {
-  local alonzo_genesis=$1
-  shift
-  local shelley_genesis=("$@")
-
-  psql "${PGDATABASE}" -c "INSERT INTO grest.genesis VALUES (
-    '${shelley_genesis[4]}', '${shelley_genesis[2]}', '${shelley_genesis[0]}',
-    '${shelley_genesis[1]}', '${shelley_genesis[3]}', '${shelley_genesis[5]}',
-    '${shelley_genesis[6]}', '${shelley_genesis[7]}', '${shelley_genesis[8]}',
-    '${shelley_genesis[9]}', '${shelley_genesis[10]}', '${alonzo_genesis}'
-  );" > /dev/null
 }
 
 setup_cron_jobs() {
@@ -148,52 +160,56 @@ setup_cron_jobs() {
   fi
 }
 
-deploy_query_updates() {
-  printf "\n(Re)Deploying Postgres RPCs/views/schedule...\n"
-  check_db_status
-  if [[ $? -eq 1 ]]; then
-    err_exit "Please wait for Cardano DBSync to populate PostgreSQL DB at least until Alonzo fork, and then re-run this setup script with the -q flag."
-  fi
+deploy_rpc() {
+  local rpc_sql_path=${1}
+  local rpc_sql=$(< $rpc_sql_path)
+  printf "\n      Deploying Function :   \e[32m$(basename ${rpc_sql_path})\e[0m"
+  ! output=$(psql "${PGDATABASE}" -v "ON_ERROR_STOP=1" -q <<<${rpc_sql} 2>&1) && printf "\n        \e[31mERROR\e[0m: ${output}"
+}
 
-  printf "\n  Downloading DBSync RPC functions from Guild Operators GitHub store..."
-  if ! rpc_file_list=$(curl -s -f -m ${CURL_TIMEOUT} https://api.github.com/repos/${G_ACCOUNT}/koios-artifacts/contents/files/grest/rpc?ref=v${SGVERSION} 2>&1); then
-    err_exit "${rpc_file_list}"
-  fi
-  printf "\n  (Re)Deploying GRest objects to DBSync..."
+deploy_query_updates() {
+  printf "\n\n(Re)Deploying Postgres RPCs/views/schedule..."
+  printf "\n\n  (Re)Deploying GRest objects to DBSync..."
+
   populate_genesis_table
-  for row in $(jq -r '.[] | @base64' <<<${rpc_file_list}); do
-    if [[ $(jqDecode '.type' "${row}") = 'dir' ]]; then
-      printf "\n    Downloading pSQL executions from subdir $(jqDecode '.name' "${row}")"
-      if ! rpc_file_list_subdir=$(curl -s -m ${CURL_TIMEOUT} "https://api.github.com/repos/${G_ACCOUNT}/koios-artifacts/contents/files/grest/rpc/$(jqDecode '.name' "${row}")?ref=v${SGVERSION}"); then
-        printf "\n      \e[31mERROR\e[0m: ${rpc_file_list_subdir}" && continue
-      fi
-      for row2 in $(jq -r '.[] | @base64' <<<${rpc_file_list_subdir}); do
-        deploy_rpc ${row2}
-      done
-    else
-      deploy_rpc ${row}
-    fi
+  for d in $RPC_SCRIPTS_DIR/*/; do
+    printf "\n\n    Execution pSQL from subdir \"$(basename $d)\""
+    for f in $d*.sql; do
+      deploy_rpc $f
+    done
   done
-  setup_cron_jobs
-  printf "\n  All RPC functions successfully added to DBSync! For detailed query specs and examples, visit ${API_DOCS_URL}!\n"
-  printf "\nRestarting PostgREST to clear schema cache..\n"
-  sudo systemctl restart ${CNODE_VNAME}-postgrest.service && printf "\nDone!!\n"
+#  setup_cron_jobs
+  printf "\n\nAll RPC functions successfully added to DBSync!\n"
 }
 
 deploy_koios() {
-  setup_authenticator
   check_db_status
   if [[ $? -eq 1 ]]; then
-    err_exit "Please wait for Cardano DBSync to populate PostgreSQL DB at least until Alonzo fork, and then re-run this setup script with the -q flag."
+    err_exit "Please wait for Cardano DBSync to populate PostgreSQL DB at least until Alonzo fork"
   fi
+  printf "/nHEYHEYHEY"
   #reset_grest_schema
   #setup_db_basics
   #deploy_query_updates
 
-  echo "SERVICES INSTALLED! ALL GOOD!"
+  echo "" > ./.success
+  printf "\n\nSERVICES INSTALLED! ALL GOOD!\n\n\n"
 }
 
-[[ $SETUP = true ]] && deploy_koios 
+deploy_extra_rpc() {
+  printf "\n(Re)Deploying Extra RPC objects to DBSync..."
+  check_db_status
+  if [[ $? -eq 1 ]]; then
+    err_exit "Please wait for Cardano DBSync to populate PostgreSQL DB at least until Alonzo fork"
+  fi
+
+  #extra_rpc
+
+  printf "\n\nEXTRA RPCS INSTALLED! ALL GOOD!\n\n\n"
+}
+
+[[ ! -e .success ]] && deploy_koios
+[[ $EXTRA = true && ! -e .success ]] && deploy_extra_rpc
 
 postgrest ${WORKDIR}/postgrest.conf
 
