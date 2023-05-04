@@ -71,7 +71,8 @@ services:
 
   koios-lite:
     build:
-      context: ./koios-lite
+      context: .
+      target: koios-lite
     ports:
       - ${POSTGREST_PORT:-8050}:8050
     depends_on:

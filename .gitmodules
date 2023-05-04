@@ -4,8 +4,6 @@
 [submodule "koios-artifacts"]
 	path = koios-artifacts
 	url = https://github.com/cardano-community/koios-artifacts.git
-	branch = main
 [submodule "guild-operators"]
 	path = guild-operators
 	url = https://github.com/cardano-community/guild-operators
-	branch = alpha

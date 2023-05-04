@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-WORKDIR=/home/postgres
+WORKDIR=$WORKDIR
 DB_NAME=$(< "$POSTGRES_DB_FILE")
 DB_USER=$(< "$POSTGRES_USER_FILE")
 DB_PASSWORD=$(< "$POSTGRES_PASSWORD_FILE")
@@ -164,7 +164,7 @@ deploy_rpc() {
   local rpc_sql_path=${1}
   local rpc_sql=$(< $rpc_sql_path)
   printf "\n      Deploying Function :   \e[32m$(basename ${rpc_sql_path})\e[0m"
-  ! output=$(psql "${PGDATABASE}" -v "ON_ERROR_STOP=1" -q <<<${rpc_sql} 2>&1) && printf "\n        \e[31mERROR\e[0m: ${output}"
+#  ! output=$(psql "${PGDATABASE}" -v "ON_ERROR_STOP=1" -q <<<${rpc_sql} 2>&1) && printf "\n        \e[31mERROR\e[0m: ${output}"
 }
 
 deploy_query_updates() {
@@ -190,7 +190,7 @@ deploy_koios() {
   printf "/nHEYHEYHEY"
   #reset_grest_schema
   #setup_db_basics
-  #deploy_query_updates
+  deploy_query_updates
 
   echo "" > ./.success
   printf "\n\nSERVICES INSTALLED! ALL GOOD!\n\n\n"
