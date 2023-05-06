@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-WORKDIR=$WORKDIR
+WORKDIR=$HOME
 DB_NAME=$(< "$POSTGRES_DB_FILE")
 DB_USER=$(< "$POSTGRES_USER_FILE")
 DB_PASSWORD=$(< "$POSTGRES_PASSWORD_FILE")
@@ -8,13 +8,13 @@ DB_PASSWORD=$(< "$POSTGRES_PASSWORD_FILE")
 PGDATABASE=${DB_NAME}
 export PGRST_DB_URI=postgres://${DB_USER}:${DB_PASSWORD}@${PGHOST}:${PGPORT}/${PGDATABASE}
 
-DB_SCRIPTS_DIR=./guild-operators/scripts/grest-helper-scripts/db-scripts
-RPC_SCRIPTS_DIR=./koios-artifacts/files/grest/rpc
-RPC_EXTRA_SCRIPTS_DIR=./rpc-extra
-CRON_SCRIPTS_DIR=./koios-artifacts/files/grest/cron/jobs
-CRON_DIR=/etc/cron.d
-SHELLEY_GENESIS_JSON=./cardano-configurations/network/${NETWORK}/genesis/shelley.json
-ALONZO_GENESIS_JSON=./cardano-configurations/network/${NETWORK}/genesis/alonzo.json
+SHELLEY_GENESIS_JSON=${WORKDIR}/cardano-configurations/network/${NETWORK}/genesis/shelley.json
+ALONZO_GENESIS_JSON=${WORKDIR}/cardano-configurations/network/${NETWORK}/genesis/alonzo.json
+DB_SCRIPTS_DIR=${WORKDIR}/db-scripts
+RPC_SCRIPTS_DIR=${WORKDIR}/rpc
+CRON_SCRIPTS_DIR=${WORKDIR}/cron
+CRON_SCHEDULE_DIR=${WORKDIR}/cron-schedule
+CRON_FILE=/var/spool/cron/crontabs/postgres
 
 echo "${PGHOST}:${PGPORT}:${PGDATABASE}:${DB_USER}:${DB_PASSWORD}" > $PGPASSFILE
 chmod 0600 $PGPASSFILE
@@ -106,65 +106,51 @@ populate_genesis_table() {
   insert_genesis_table_data "${ALGENESIS}" "${SHGENESIS[@]}"
 }
 
+
 setup_cron_jobs() {
-  ! is_dir "${CRON_SCRIPTS_DIR}" && mkdir -p "${CRON_SCRIPTS_DIR}"
+  printf "\n\n  (Re)Deploying Cron jobs..."
+  printf "\n\n    Execution jobs..."
+  echo "" > $CRON_FILE
 
-  echo ""
-  get_cron_job_executable "stake-distribution-update"
-  set_cron_variables "stake-distribution-update"
-  # Special condition for guild network (NWMAGIC=141) where activity and entries are minimal, and epoch duration is 1 hour
-  ([[ ${NWMAGIC} -eq 141 ]] && install_cron_job "stake-distribution-update" "*/5 * * * *") ||
-    install_cron_job "stake-distribution-update" "*/30 * * * *"
+  for cron_file in $CRON_SCRIPTS_DIR/*.sh; do
+    cron_file_no_ext=$(basename ${cron_file%.*})
+    cron_pattern_file="$CRON_SCHEDULE_DIR/$cron_file_no_ext"
 
-  get_cron_job_executable "stake-distribution-new-accounts-update"
-  set_cron_variables "stake-distribution-new-accounts-update"
-  ([[ ${NWMAGIC} -eq 141 ]] && install_cron_job "stake-distribution-new-accounts-update" "*/30 * * * *") ||
-    install_cron_job "stake-distribution-new-accounts-update" "58 */6 * * *"
+    if [ -f $cron_pattern_file  ]
+    then
+      cron_pattern=$(< "$cron_pattern_file")
 
-  get_cron_job_executable "pool-history-cache-update"
-  set_cron_variables "pool-history-cache-update"
-  ([[ ${NWMAGIC} -eq 141 ]] && install_cron_job "pool-history-cache-update" "*/5 * * * *") ||
-    install_cron_job "pool-history-cache-update" "*/10 * * * *"
+      [[ ${PGDATABASE} != cexplorer ]] && sed -e "s@DB_NAME=.*@DB_NAME=${PGDATABASE}@" -i "$cron_file"
+      printf "\n      Deploying Cron :   \e[32m$cron_file_no_ext\e[0m"
 
-  get_cron_job_executable "epoch-info-cache-update"
-  set_cron_variables "epoch-info-cache-update"
-  ([[ ${NWMAGIC} -eq 141 ]] && install_cron_job "epoch-info-cache-update" "*/5 * * * *") ||
-    install_cron_job "epoch-info-cache-update" "*/15 * * * *"
+      # Skip populate-next-epoch-nonce
+      if [ $cron_file_no_ext = "populate-next-epoch-nonce" ]; then
+        printf "\n        Skipping:        \e[32m$cron_file_no_ext\e[0m\n"
+        continue
+      fi
 
-  get_cron_job_executable "active-stake-cache-update"
-  set_cron_variables "active-stake-cache-update"
-  ([[ ${NWMAGIC} -eq 141 ]] && install_cron_job "active-stake-cache-update" "*/5 * * * *") ||
-    install_cron_job "active-stake-cache-update" "*/15 * * * *"
+      # Custom rule for asset-registry-update
+      if [ $cron_file_no_ext = "asset-registry-update" ]; then
+        printf "\n        Custom Rule :    \e[32m$cron_file_no_ext\e[0m\n"
+        continue
+      fi
 
-  get_cron_job_executable "stake-snapshot-cache"
-  set_cron_variables "stake-snapshot-cache"
-  install_cron_job "stake-snapshot-cache" "*/10 * * * *"
+    echo "${cron_pattern} ${cron_file} > /proc/1/fd/1 2>&1" >> $CRON_FILE
 
-  get_cron_job_executable "populate-next-epoch-nonce"
-  set_cron_variables "populate-next-epoch-nonce"
-  install_cron_job "populate-next-epoch-nonce" "*/10 * * * *"
+    else
+      printf "\n      \e[31mERROR\e[0m:   Schedule not found for script $(basename ${cron_file})"
+    fi
+  done
 
-  get_cron_job_executable "asset-info-cache-update"
-  set_cron_variables "asset-info-cache-update"
-  install_cron_job "asset-info-cache-update" "* * * * *"
-
-  # Only (legacy) testnet and mainnet asset registries supported
-  # In absence of official messaging, current (soon to be reset) preprod/preview networks use same registry as testnet. TBC - once there is an update from IO on these
-  # Possible future addition for the Guild network once there is a guild registry
-  if [[ ${NWMAGIC} -eq 764824073 || ${NWMAGIC} -eq 1 || ${NWMAGIC} -eq 2 || ${NWMAGIC} -eq 141 ]]; then
-    get_cron_job_executable "asset-registry-update"
-    set_cron_variables "asset-registry-update"
-    # Point the update script to testnet regisry repo structure (default: mainnet)
-    [[ ${NWMAGIC} -eq 1 || ${NWMAGIC} -eq 2 || ${NWMAGIC} -eq 141 ]] && set_cron_asset_registry_testnet_variables
-    install_cron_job "asset-registry-update" "*/10 * * * *"
-  fi
+  pkill -f crond
+  crond -b -l 8
 }
 
 deploy_rpc() {
   local rpc_sql_path=${1}
   local rpc_sql=$(< $rpc_sql_path)
   printf "\n      Deploying Function :   \e[32m$(basename ${rpc_sql_path})\e[0m"
-#  ! output=$(psql "${PGDATABASE}" -v "ON_ERROR_STOP=1" -q <<<${rpc_sql} 2>&1) && printf "\n        \e[31mERROR\e[0m: ${output}"
+  ! output=$(psql "${PGDATABASE}" -v "ON_ERROR_STOP=1" -q <<<${rpc_sql} 2>&1) && printf "\n        \e[31mERROR\e[0m: ${output}"
 }
 
 deploy_query_updates() {
@@ -178,8 +164,8 @@ deploy_query_updates() {
       deploy_rpc $f
     done
   done
-#  setup_cron_jobs
-  printf "\n\nAll RPC functions successfully added to DBSync!\n"
+  setup_cron_jobs
+  printf "\n\nAll RPC functions successfully added to DBSync!"
 }
 
 deploy_koios() {
@@ -187,29 +173,15 @@ deploy_koios() {
   if [[ $? -eq 1 ]]; then
     err_exit "Please wait for Cardano DBSync to populate PostgreSQL DB at least until Alonzo fork"
   fi
-  printf "/nHEYHEYHEY"
-  #reset_grest_schema
-  #setup_db_basics
+  reset_grest_schema
+  setup_db_basics
   deploy_query_updates
 
   echo "" > ./.success
   printf "\n\nSERVICES INSTALLED! ALL GOOD!\n\n\n"
 }
 
-deploy_extra_rpc() {
-  printf "\n(Re)Deploying Extra RPC objects to DBSync..."
-  check_db_status
-  if [[ $? -eq 1 ]]; then
-    err_exit "Please wait for Cardano DBSync to populate PostgreSQL DB at least until Alonzo fork"
-  fi
-
-  #extra_rpc
-
-  printf "\n\nEXTRA RPCS INSTALLED! ALL GOOD!\n\n\n"
-}
-
+# Check if success file not exist and run setup
 [[ ! -e .success ]] && deploy_koios
-[[ $EXTRA = true && ! -e .success ]] && deploy_extra_rpc
 
 postgrest ${WORKDIR}/postgrest.conf
-
