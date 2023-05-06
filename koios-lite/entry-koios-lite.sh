@@ -181,7 +181,7 @@ deploy_koios() {
   printf "\n\nSERVICES INSTALLED! ALL GOOD!\n\n\n"
 }
 
-# Check if success file not exist and run setup
+# Check if success installation file not exist, and run the installation
 [[ ! -e .success ]] && deploy_koios
 
 postgrest ${WORKDIR}/postgrest.conf
