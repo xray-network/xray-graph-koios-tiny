@@ -64,7 +64,7 @@ services:
     restart: on-failure
     stop_signal: SIGINT
     logging:
-      driver: "json-file"
+      driver: "local"
       options:
         max-size: "200k"
         max-file: "10"
@@ -145,6 +145,8 @@ services:
       - postgres_db
       - postgres_password
       - postgres_user
+    volumes:
+      - /var/lib/docker/containrs/:/whole
     logging:
       driver: "json-file"
       options:

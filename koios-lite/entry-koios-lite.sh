@@ -13,8 +13,6 @@ ALONZO_GENESIS_JSON=${WORKDIR}/cardano-configurations/network/${NETWORK}/genesis
 DB_SCRIPTS_DIR=${WORKDIR}/db-scripts
 RPC_SCRIPTS_DIR=${WORKDIR}/rpc
 CRON_SCRIPTS_DIR=${WORKDIR}/cron
-CRON_SCHEDULE_DIR=${WORKDIR}/cron-schedule
-CRON_FILE=/var/spool/cron/crontabs/postgres
 
 echo "${PGHOST}:${PGPORT}:${PGDATABASE}:${DB_USER}:${DB_PASSWORD}" > $PGPASSFILE
 chmod 0600 $PGPASSFILE
@@ -40,14 +38,34 @@ check_db_status() {
   return 0
 }
 
-reset_grest_schema() {
-  local reset_sql_url="${DB_SCRIPTS_DIR}/reset_grest.sql"
+kill_cron_psql_process() {
+  local update_function=$(echo ${1} | tr '-' '_')
+  output=$(psql "${PGDATABASE}" -v "ON_ERROR_STOP=1" -qt \
+    -c "select grest.get_query_pids_partial_match('${update_function}');" |
+      awk 'BEGIN {ORS = " "} {print $1}' | xargs echo -n)
+  [[ -n "${output}" ]] && echo ${output} | xargs sudo kill -SIGTERM > /dev/null
+}
 
+reset_grest_schema() {
+  printf "\nKilling related PSQL cron jobs..."
+  kill_cron_psql_process "active-stake-cache-update"
+  kill_cron_psql_process "asset-info-cache-update"
+  kill_cron_psql_process "asset-registry-update"
+  kill_cron_psql_process "epoch-info-cache-update"
+  kill_cron_psql_process "pool-history-cache-update"
+  kill_cron_psql_process "populate-next-epoch-nonce"
+  kill_cron_psql_process "stake-distribution-new-accounts-update"
+  kill_cron_psql_process "stake-distribution-update"
+  kill_cron_psql_process "stake-snapshot-cache"
+  printf "\n  Done!"
+
+  printf "\nResetting grest schema if exists from previous installations..."
+  local reset_sql_url="${DB_SCRIPTS_DIR}/reset_grest.sql"
   if ! reset_sql=$(< $reset_sql_url); then
     err_exit "Failed to get reset grest SQL from ${reset_sql_url}."
   fi
-  printf "\nResetting grest schema..."
   ! output=$(psql "${PGDATABASE}" -v "ON_ERROR_STOP=1" -q <<<${reset_sql} 2>&1) && err_exit "${output}"
+  printf "\n  Done!\n\n"
 }
 
 setup_db_basics() {
@@ -106,39 +124,32 @@ populate_genesis_table() {
   insert_genesis_table_data "${ALGENESIS}" "${SHGENESIS[@]}"
 }
 
-
 setup_cron_jobs() {
   printf "\n\n  (Re)Deploying Cron jobs..."
   printf "\n\n    Execution jobs..."
-  echo "" > $CRON_FILE
 
   for cron_file in $CRON_SCRIPTS_DIR/*.sh; do
-    cron_file_no_ext=$(basename ${cron_file%.*})
-    cron_pattern_file="$CRON_SCHEDULE_DIR/$cron_file_no_ext"
+    cron_file_name=$(basename $cron_file)
+    cron_file_name_no_ext=${cron_file_name%.*}
 
-    if [ -f $cron_pattern_file  ]
-    then
-      cron_pattern=$(< "$cron_pattern_file")
+    [[ ${PGDATABASE} != cexplorer ]] && sed -e "s@DB_NAME=.*@DB_NAME=${PGDATABASE}@" -i "$cron_file"
+    sed -i "2i HOME=${WORKDIR}\n" "$cron_file"
 
-      [[ ${PGDATABASE} != cexplorer ]] && sed -e "s@DB_NAME=.*@DB_NAME=${PGDATABASE}@" -i "$cron_file"
-      printf "\n      Deploying Cron :   \e[32m$cron_file_no_ext\e[0m"
+    printf "\n      Updating Cron Variables:   \e[32m$cron_file_name_no_ext\e[0m"
 
-      # Skip populate-next-epoch-nonce
-      if [ $cron_file_no_ext = "populate-next-epoch-nonce" ]; then
-        printf "\n        Skipping:        \e[32m$cron_file_no_ext\e[0m\n"
-        continue
+    if [[ $cron_file_name_no_ext == "asset-registry-update" ]]; then
+      if [[ $NETWORK == "mainnet" ]]
+      then
+        printf "\n        Custom Rule: Mainnet registry ENV updated!"
+        [[ -d "/var/lib/postgresql/git/cnode-token-registry" ]] && find "/var/lib/postgresql/git/cnode-token-registry" -mindepth 2 -maxdepth 2 -type f -name "*.json" -exec touch {} +
+      else
+        printf "\n        Custom Rule: Testnet registry ENV updated!"
+        sed -e "s@CNODE_VNAME=.*@CNODE_VNAME=cnode@" \
+          -e "s@TR_URL=.*@TR_URL=https://github.com/input-output-hk/metadata-registry-testnet@" \
+          -e "s@TR_SUBDIR=.*@TR_SUBDIR=registry@" \
+          -i "${CRON_SCRIPTS_DIR}/asset-registry-update.sh"
       fi
-
-      # Custom rule for asset-registry-update
-      if [ $cron_file_no_ext = "asset-registry-update" ]; then
-        printf "\n        Custom Rule :    \e[32m$cron_file_no_ext\e[0m\n"
-        continue
-      fi
-
-    echo "${cron_pattern} ${cron_file} > /proc/1/fd/1 2>&1" >> $CRON_FILE
-
-    else
-      printf "\n      \e[31mERROR\e[0m:   Schedule not found for script $(basename ${cron_file})"
+      continue
     fi
   done
 
@@ -149,8 +160,23 @@ setup_cron_jobs() {
 deploy_rpc() {
   local rpc_sql_path=${1}
   local rpc_sql=$(< $rpc_sql_path)
+
   printf "\n      Deploying Function :   \e[32m$(basename ${rpc_sql_path})\e[0m"
   ! output=$(psql "${PGDATABASE}" -v "ON_ERROR_STOP=1" -q <<<${rpc_sql} 2>&1) && printf "\n        \e[31mERROR\e[0m: ${output}"
+}
+
+deploy_rpcs() {
+  printf "\n\n    Execution pSQL from subdir \"/\""
+  for f in ${RPC_SCRIPTS_DIR}/*.sql; do
+    deploy_rpc $f
+  done
+
+  for d in $RPC_SCRIPTS_DIR/*/; do
+    printf "\n\n    Execution pSQL from subdir \"$(basename $d)\""
+    for f in $d*.sql; do
+      deploy_rpc $f
+    done
+  done
 }
 
 deploy_query_updates() {
@@ -158,13 +184,9 @@ deploy_query_updates() {
   printf "\n\n  (Re)Deploying GRest objects to DBSync..."
 
   populate_genesis_table
-  for d in $RPC_SCRIPTS_DIR/*/; do
-    printf "\n\n    Execution pSQL from subdir \"$(basename $d)\""
-    for f in $d*.sql; do
-      deploy_rpc $f
-    done
-  done
+  deploy_rpcs
   setup_cron_jobs
+
   printf "\n\nAll RPC functions successfully added to DBSync!"
 }
 
@@ -173,6 +195,7 @@ deploy_koios() {
   if [[ $? -eq 1 ]]; then
     err_exit "Please wait for Cardano DBSync to populate PostgreSQL DB at least until Alonzo fork"
   fi
+  setup_db_basics
   reset_grest_schema
   setup_db_basics
   deploy_query_updates
@@ -183,5 +206,6 @@ deploy_koios() {
 
 # Check if success installation file not exist, and run the installation
 [[ ! -e .success ]] && deploy_koios
+
 
 postgrest ${WORKDIR}/postgrest.conf

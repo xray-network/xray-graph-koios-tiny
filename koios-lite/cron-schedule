@@ -1,0 +1,9 @@
+40 */1 * * * /home/postgres/cron/active-stake-cache-update.sh > /proc/1/fd/1 2>&1
+* * * * * /home/postgres/cron/asset-info-cache-update.sh > /proc/1/fd/1 2>&1
+*/15 * * * * /home/postgres/cron/epoch-info-cache-update.sh > /proc/1/fd/1 2>&1
+*/10 * * * * /home/postgres/cron/asset-registry-update.sh > /proc/1/fd/1 2>&1
+*/10 * * * * /home/postgres/cron/pool-history-cache-update.sh > /proc/1/fd/1 2>&1
+#*/10 * * * * /home/postgres/cron/populate-next-epoch-nonce.sh > /proc/1/fd/1 2>&1
+58 */6 * * * /home/postgres/cron/stake-distribution-new-accounts-update.sh > /proc/1/fd/1 2>&1
+*/30 * * * * /home/postgres/cron/stake-distribution-update.sh > /proc/1/fd/1 2>&1
+*/10 * * * * /home/postgres/cron/stake-snapshot-cache.sh > /proc/1/fd/1 2>&1
