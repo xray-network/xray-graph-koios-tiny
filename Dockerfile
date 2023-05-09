@@ -1,4 +1,7 @@
- FROM alpine:latest as koios-lite
+#############################################################################################
+### KOIOS-LITE ###
+
+FROM alpine:latest as koios-lite
 
 # Installing packages...
 RUN apk add --no-cache dcron libcap bash nano jq git postgresql-client
@@ -8,7 +11,7 @@ ENV \
   HOME=/home/postgres \
   PGPASSFILE=/home/postgres/.pgpass
 
-# Copying config & Koios files
+# Copying config & files
 WORKDIR /home/postgres
 COPY --from=postgrest/postgrest /bin/postgrest /bin
 COPY koios-lite/postgrest.conf .
@@ -35,6 +38,18 @@ USER postgres
 
 # Setting up an exposed port and starting a container
 EXPOSE 8050/tcp
-STOPSIGNAL SIGINT
 ENTRYPOINT ["./entry-koios-lite.sh"]
 
+
+
+#############################################################################################
+### KOIOS-POSTGRAPHILE ###
+
+#FROM node:alpine as koios-postgraphile
+
+## Installing Postgraphile
+#RUN npm install -g postgraphile
+#RUN npm install -g postgraphile-plugin-connection-filter
+
+#EXPOSE 8150/tcp
+#ENTRYPOINT ["postgraphile", "-n", "0.0.0.0"]

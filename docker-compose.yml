@@ -130,7 +130,7 @@ services:
       context: .
       target: koios-lite
     ports:
-      - ${POSTGREST_PORT:-8050}:8050
+      - ${KOIOS_LITE_PORT:-8050}:8050
     depends_on:
       - "postgres"
     environment:
@@ -145,13 +145,45 @@ services:
       - postgres_db
       - postgres_password
       - postgres_user
-    volumes:
-      - /var/lib/docker/containrs/:/whole
     logging:
       driver: "json-file"
       options:
         max-size: "200k"
         max-file: "10"
+
+#  koios-postgraphile:
+#    build:
+#      context: .
+#      target: koios-postgraphile
+#    command: [
+#      "--host", "0.0.0.0",
+#      "--port", "8150",
+#      "--connection", "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${PGHOST}:${PGPORT}/${POSTGRES_DB}",
+#      "--schema", "grest",
+#      "--enhance-graphiql",
+#      "--disable-default-mutations",
+#      "--append-plugins", "postgraphile-plugin-connection-filter",
+#    ]
+#    ports:
+#      - ${KOIOS_POSTGRAPHILE_PORT:-127.0.0.1:8150}:8150
+#    depends_on:
+#      - "koios-lite"
+#    environment:
+#      - PGHOST=${PGHOST:-postgres}
+#      - PGPORT=${PGPORT:-5432}
+#      - POSTGRES_DB_FILE=/run/secrets/postgres_db
+#      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+#      - POSTGRES_USER_FILE=/run/secrets/postgres_user
+#    restart: on-failure
+#    secrets:
+#      - postgres_db
+#      - postgres_password
+#      - postgres_user
+#    logging:
+#      driver: "json-file"
+#      options:
+#        max-size: "200k"
+#        max-file: "10"
 
 secrets:
   postgres_db:
@@ -165,3 +197,4 @@ volumes:
   node-db:
   node-ipc:
   postgres-data:
+  kupo-db:
