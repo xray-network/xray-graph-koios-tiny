@@ -1,4 +1,4 @@
-40 */1 * * * /home/postgres/cron/active-stake-cache-update.sh > /proc/1/fd/1 2>&1
+0 3 * * * /home/postgres/cron/active-stake-cache-update.sh > /proc/1/fd/1 2>&1
 * * * * * /home/postgres/cron/asset-info-cache-update.sh > /proc/1/fd/1 2>&1
 */15 * * * * /home/postgres/cron/epoch-info-cache-update.sh > /proc/1/fd/1 2>&1
 */10 * * * * /home/postgres/cron/asset-registry-update.sh > /proc/1/fd/1 2>&1
