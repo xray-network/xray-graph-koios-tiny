@@ -1,12 +1,7 @@
 #!/usr/bin/env bash
 
 WORKDIR=$HOME
-DB_NAME=$(< "$POSTGRES_DB_FILE")
-DB_USER=$(< "$POSTGRES_USER_FILE")
-DB_PASSWORD=$(< "$POSTGRES_PASSWORD_FILE")
-
-PGDATABASE=${DB_NAME}
-export PGRST_DB_URI=postgres://${DB_USER}:${DB_PASSWORD}@${PGHOST}:${PGPORT}/${PGDATABASE}
+PGDATABASE=${POSTGRES_DB}
 
 SHELLEY_GENESIS_JSON=${WORKDIR}/cardano-configurations/network/${NETWORK}/genesis/shelley.json
 ALONZO_GENESIS_JSON=${WORKDIR}/cardano-configurations/network/${NETWORK}/genesis/alonzo.json
@@ -14,7 +9,7 @@ DB_SCRIPTS_DIR=${WORKDIR}/db-scripts
 RPC_SCRIPTS_DIR=${WORKDIR}/rpc
 CRON_SCRIPTS_DIR=${WORKDIR}/cron
 
-echo "${PGHOST}:${PGPORT}:${PGDATABASE}:${DB_USER}:${DB_PASSWORD}" > $PGPASSFILE
+echo "${POSTGRES_HOST}:${POSTGRES_PORT}:${POSTGRES_DB}:${POSTGRES_USER}:${POSTGRES_PASSWORD}" > $PGPASSFILE
 chmod 0600 $PGPASSFILE
 
 err_exit() {
@@ -206,6 +201,5 @@ deploy_koios() {
 
 # Check if success installation file not exist, and run the installation
 [[ ! -e .success ]] && deploy_koios
-
 
 postgrest ${WORKDIR}/postgrest.conf

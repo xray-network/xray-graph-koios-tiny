@@ -14,8 +14,8 @@ ENV \
 # Copying config & files
 WORKDIR /home/postgres
 COPY --from=postgrest/postgrest /bin/postgrest /bin
-COPY koios-lite/postgrest.conf .
-COPY koios-lite/entry-koios-lite.sh .
+COPY config/postgrest.conf .
+COPY koios-lite/entrypoint.sh .
 COPY cardano-configurations cardano-configurations
 COPY guild-operators/scripts/grest-helper-scripts/db-scripts db-scripts
 
@@ -38,8 +38,7 @@ USER postgres
 
 # Setting up an exposed port and starting a container
 EXPOSE 8050/tcp
-ENTRYPOINT ["./entry-koios-lite.sh"]
-
+ENTRYPOINT ["./entrypoint.sh"]
 
 
 #############################################################################################
