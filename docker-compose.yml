@@ -6,11 +6,12 @@ services:
     env_file: ./.env
     environment:
       - POSTGRES_LOGGING=true
-      - POSTGRES_CONF_FILE=/etc/postgresql/postgresql.conf
+      - POSTGRES_CONF_FILE=/config/postgresql.conf
     ports:
       - ${POSTGRES_PORT:-5432}:5432
     shm_size: '2gb'
     volumes:
+      - ./config:/config
       - postgres-data:/var/lib/postgresql/data
     restart: on-failure
     logging:
@@ -38,7 +39,7 @@ services:
     image: inputoutput/cardano-db-sync:${CARDANO_DB_SYNC_VERSION:-13.1.0.2}
     env_file: ./.env
     command: [
-      "--config", "/config/cardano-db-sync/config.json",
+      "--config", "/config-db-sync/config.json",
       "--socket-path", "/node-ipc/node.socket"
     ]
     environment:
@@ -49,9 +50,11 @@ services:
       - cardano-node-ogmios
       - postgres
     volumes:
+      - ./config/cardano-db-sync/${NETWORK:-mainnet}:/config-db-sync
       - ./cardano-configurations/network/${NETWORK:-mainnet}:/config
-      - db-sync-data:/var/lib/cexplorer
       - node-ipc:/node-ipc
+      - db-sync-data:/var/lib/cexplorer
+      - db-sync-logs:/db-sync-logs
     restart: on-failure
     stop_signal: SIGINT
     logging:
@@ -69,6 +72,8 @@ services:
       - ${KOIOS_LITE_PORT:-8050}:8050
     depends_on:
       - "postgres"
+    volumes:
+      - db-sync-logs:/home/logs
     environment:
       - NETWORK=${NETWORK:-mainnet}
     restart: on-failure
@@ -113,6 +118,7 @@ services:
 #        max-file: "10"
 
 volumes:
+  db-sync-logs:
   db-sync-data:
   node-db:
   node-ipc:
