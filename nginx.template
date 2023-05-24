@@ -4,19 +4,43 @@ server {
 
         server_name mainnet.blockchain.raygraph.io;
 
+        location = / {
+                proxy_pass http://0.0.0.0:8050;
+        }
+
         location / {
-                proxy_pass http://127.0.0.1:8050;
+                proxy_pass http://0.0.0.0:8050/rpc/;
+        }
+
+        location ~ /(account_list\b|asset_list\b|asset_token_registry\b|blocks\b) {
+                proxy_pass http://0.0.0.0:8050;
+        }
+
+        location /submittx {
+                proxy_pass http://0.0.0.0:8700;
         }
 }
 
 server {
         listen 443 ssl;
-        ssl_certificate /etc/nginx/conf.d/ssl/raygraph.io.crt;
-        ssl_certificate_key /etc/nginx/conf.d/ssl/raygraph.io.key;
+        ssl_certificate /ssl/raygraph.io.crt;
+        ssl_certificate_key /ssl/raygraph.io.key;
 
         server_name mainnet.blockchain.raygraph.io;
 
+        location = / {
+                proxy_pass http://0.0.0.0:8050;
+        }
+
         location / {
-                proxy_pass http://127.0.0.1:8050;
+                proxy_pass http://0.0.0.0:8050/rpc/;
+        }
+
+        location ~ /(account_list\b|asset_list\b|asset_token_registry\b|blocks\b) {
+                proxy_pass http://0.0.0.0:8050;
+        }
+
+        location /submittx {
+                proxy_pass http://0.0.0.0:8700;
         }
 }
