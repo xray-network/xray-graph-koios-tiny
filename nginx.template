@@ -1,0 +1,22 @@
+server {
+        listen 80;
+        listen [::]:80;
+
+        server_name rpc.raygraph.io;
+
+        location / {
+                proxy_pass http://127.0.0.1:8050;
+        }
+}
+
+server {
+        listen 443 ssl;
+        ssl_certificate /etc/nginx/conf.d/ssl/raygraph.io.crt;
+        ssl_certificate_key /etc/nginx/conf.d/ssl/raygraph.io.key;
+
+        server_name rpc.raygraph.io;
+
+        location / {
+                proxy_pass http://127.0.0.1:8050;
+        }
+}
