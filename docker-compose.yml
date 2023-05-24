@@ -6,12 +6,11 @@ services:
     env_file: ./.env
     environment:
       - POSTGRES_LOGGING=true
-      - POSTGRES_CONF_FILE=/config/postgresql.conf
     ports:
       - 127.0.0.1:${POSTGRES_PORT:-5432}:5432
     shm_size: '2gb'
     volumes:
-      - ./config:/config
+      - ./config/postgresql.conf:/var/lib/postgresql/data/postgresql.conf
       - postgres-data:/var/lib/postgresql/data
     restart: on-failure
     logging:
