@@ -18,17 +18,21 @@ const router = new Router()
 
 router.post('/', async (req, res) => {
   const tx = req.body
+  const context = await createInteractionContext(
+    err => console.error(err),
+    () => console.log("Connection closed."),
+    { connection: { host: 'cardano-node-ogmios', port: 1337 } }
+  )
+  const client = await createTxSubmissionClient(context)
+
   try {
-    const context = await createInteractionContext(
-      err => console.error(err),
-      () => console.log("Connection closed."),
-      { connection: { host: 'cardano-node-ogmios', port: 1337 } }
-    )
-    const client = await createTxSubmissionClient(context)
+    console.log(new Date().toISOString(), "::", tx)
     const result = await client.submitTx(tx)
+    await context.socket.close()
     res.send(result)
   }
   catch (error) {
+    await context.socket.close()
     res.status(400).send(error)
   }
 })
