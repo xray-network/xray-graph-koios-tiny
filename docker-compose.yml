@@ -82,6 +82,21 @@ services:
         max-size: "200k"
         max-file: "10"
 
+  submittx:
+    build:
+      context: .
+      target: submittx
+    ports:
+      - ${SUBMITTX_PORT:-8700}:8700
+    depends_on:
+      - cardano-node-ogmios
+    restart: on-failure
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
 #  koios-postgraphile:
 #    build:
 #      context: .

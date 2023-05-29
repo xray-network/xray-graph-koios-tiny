@@ -42,6 +42,21 @@ ENTRYPOINT ["./entrypoint.sh"]
 
 
 #############################################################################################
+### SUBMITTX ###
+
+FROM node:14 as submittx
+
+WORKDIR /usr/src/app
+
+COPY submittx .
+RUN yarn install
+
+EXPOSE 8700/tcp
+CMD [ "node", "index.js" ]
+
+
+
+#############################################################################################
 ### KOIOS-POSTGRAPHILE ###
 
 #FROM node:alpine as koios-postgraphile
