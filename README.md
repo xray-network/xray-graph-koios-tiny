@@ -23,7 +23,7 @@ cp .env.example .env
 >If you are restoring the database (RESTORE_SNAPSHOT flag), make sure that the koios-lite container is stopped. It should be started as soon as cardano-db-sync picks up the last blocks from the node (you can check this with `docker compose logs cardano-db-sync`). And then run `docker compose start koios-lite`. [Issue #3](https://github.com/ray-network/raygraph-output/issues/3)
   
 <details open>
-  <summary><i>mainnet</i></summary>
+  <summary>MAINNET</summary>
 
 Get the most recent weekly snapshot link [here](https://update-cardano-mainnet.iohk.io/cardano-db-sync/index.html#13.1/), and set it as `RESTORE_SNAPSHOT` below, or omit if you wish to sync from genesis.
 ``` console
@@ -34,29 +34,114 @@ docker compose stop koios-lite
 </details>
   
 <details>
-  <summary><i>preprod</i></summary>
+  <summary>PREPROD</summary>
 
 ``` console
 NETWORK=preprod \
 KOIOS_LITE_PORT=8051 \
 SUBMITTX_PORT=8701
 OGMIOS_PORT=1338 \
-docker compose -p preprod up -d --build && \
-docker compose stop koios-lite
+docker compose -p preprod up -d --build
 ```
 
 </details>
   
 <details>
-  <summary><i>preview</i></summary>
+  <summary>PREVIEW</summary>
 
 ``` console
 NETWORK=preview \
 KOIOS_LITE_PORT=8052 \
 SUBMITTX_PORT=8702
 OGMIOS_PORT=1339 \
-docker compose -p preview up -d --build &&\
-docker compose stop koios-lite
+docker compose -p preview up -d --build
 ```
 
+</details>
+
+#### Check Status
+``` console
+curl 0.0.0.0:8050/tip
+```
+  
+## TypeScript Client
+  
+We recommend to use `koios-tiny-client`. Visit https://github.com/ray-network/koios-tiny-client for more information.
+  
+## OpenAPI Sandbox
+  
+Visit https://api.koios.rest/ for API testing.
+  
+## Advanced Usage
+  
+<details>
+  <summary>Nginx Template</summary>
+
+By default, all container ports are bound to 127.0.0.1, so these ports are not available outside the server. Replace `127.0.0.1:${KOIOS_LITE_PORT:-8050}:8050` with `${KOIOS_LITE_PORT:-8050}:8050` if you want to open ports for external access.
+
+Nginx should handle routes with this configuration (see `nginx.template` file):
+  
+``` nginx
+server {
+        listen 80;
+        listen [::]:80;
+
+        server_name mainnet.blockchain.raygraph.io;
+
+        location = / {
+                proxy_pass http://0.0.0.0:8050;
+        }
+
+        location / {
+                proxy_pass http://0.0.0.0:8050/rpc/;
+        }
+
+        location ~ /(account_list\b|asset_list\b|asset_token_registry\b|blocks\b) {
+                proxy_pass http://0.0.0.0:8050;
+        }
+
+        location /submittx {
+                proxy_pass http://0.0.0.0:8700;
+        }
+}
+
+server {
+        listen 443 ssl;
+        ssl_certificate /ssl/raygraph.io.crt;
+        ssl_certificate_key /ssl/raygraph.io.key;
+
+        server_name mainnet.blockchain.raygraph.io;
+
+        location = / {
+                proxy_pass http://0.0.0.0:8050;
+        }
+
+        location / {
+                proxy_pass http://0.0.0.0:8050/rpc/;
+        }
+
+        location ~ /(account_list\b|asset_list\b|asset_token_registry\b|blocks\b) {
+                proxy_pass http://0.0.0.0:8050;
+        }
+
+        location /submittx {
+                proxy_pass http://0.0.0.0:8700;
+        }
+}
+```
+
+</details>
+  
+<details>
+  <summary>Custom RPCs</summary>
+
+Place the `.sql` files in the `koios-lite/rpc-extra` folder to register with Postgrest. Then rebuild the `koios-lite` container. Read more at https://postgrest.org/en/stable/references/api.html
+  
+</details>
+ 
+<details>
+  <summary>Custom Cron Tasks</summary>
+  
+Place the .sh files in `koios-lite/cron-jobs-extra` and edit the `koios-lite/cron-schedule`. Then rebuild the `koios-lite` container.
+  
 </details>
