@@ -11,7 +11,7 @@ RayGraph-Output is a dockered Cardano blockchain explorer API tool based on [Koi
 ``` console
 git clone \
   --recurse-submodules \
-  https://ray-robot@github.com/ray-network/raygraph-output.git \
+  https://github.com/ray-network/raygraph-output.git \
   && cd raygraph-output
 ```
 ``` console
@@ -30,7 +30,7 @@ docker compose up -d --build && \
 docker compose stop koios-lite
 ```
   
->If you are restoring the database (RESTORE_SNAPSHOT flag), make sure that the koios-lite container is stopped. It should be started as soon as cardano-db-sync picks up the last blocks from the node (you can check this with `docker compose logs cardano-db-sync`). This procedure takes about 4 hours with epoch 413 snapshot when using a fast NVMe SSD (~1M IOPS), keep that in mind. And then run `docker compose start koios-lite`. [Issue #3](https://github.com/ray-network/raygraph-output/issues/3)
+>IMPORTANT! If you are restoring the database (RESTORE_SNAPSHOT flag), make sure that the koios-lite container is stopped. It should be started as soon as cardano-db-sync picks up the last blocks from the node (you can check this with `docker compose logs cardano-db-sync`). This procedure takes about 4 hours with epoch 413 snapshot when using a fast NVMe SSD (~1M IOPS), keep that in mind. And then run `docker compose start koios-lite`. [Issue #3](https://github.com/ray-network/raygraph-output/issues/3)
   
 </details>
   
@@ -61,9 +61,13 @@ docker compose -p preview up -d --build
 </details>
 
 
-## OpenAPI Sandbox
+## Endpoints List & OpenAPI Sandbox
   
-Visit https://api.koios.rest/ for API testing and usage (accessing, filtering, sorting, etc...). CURL examples (rpc and view tables):
+Visit https://api.koios.rest/ for API testing and usage info (accessing, filtering, sorting, etc...).
+
+## API Status Check
+  
+Raw CURL query examples (rpc and view tables, without Nginx routes handling):
   
 ``` console
 curl 0.0.0.0:8050/rpc/tip
@@ -156,3 +160,15 @@ Place the .sh files in `koios-lite/cron-jobs-extra` and edit the `koios-lite/cro
 The Ray Network team is busy with other projects, so Postgraphile graphql resolvers will be developed in the near future. Stay tuned!
   
 </details>
+
+## System Requirements
+  
+In general, this stack loads the system in the same way as `cardano-db-sync`, so the minimal system requirements will be the same:
+
+* Any of the big well known Linux distributions (eg, Debian, Ubuntu, RHEL, CentOS, Arch etc).
+* 32 Gigabytes of RAM or more.
+* 4 CPU cores or more.
+* Ensure that the machine has sufficient IOPS (Input/Output Operations per Second). Ie it should be 60k IOPS or better. Lower IOPS ratings will result in slower sync times and/or falling behind the chain tip.
+* 320 Gigabytes or more of disk storage (preferably SSD which are 2-5 times faster than electro-mechanical disks).
+  
+When building an application that will be querying the database, remember that for fast queries, low latency disk access is far more important than high throughput (assuming the minimal IOPS above is met).
