@@ -60,18 +60,21 @@ docker compose -p preview up -d --build
 
 </details>
 
-#### Check Status
+
+## OpenAPI Sandbox
+  
+Visit https://api.koios.rest/ for API testing and usage (accessing, filtering, sorting, etc...). CURL examples:
+  
 ``` console
 curl 0.0.0.0:8050/tip
+```
+``` console
+curl 0.0.0.0:8050/blocks
 ```
   
 ## TypeScript Client
   
 We recommend to use `koios-tiny-client`. Visit https://github.com/ray-network/koios-tiny-client for more information.
-  
-## OpenAPI Sandbox
-  
-Visit https://api.koios.rest/ for API testing.
   
 ## Advanced Usage
   
@@ -144,5 +147,12 @@ Place the `.sql` files in the `koios-lite/rpc-extra` folder to register with Pos
   <summary>Custom Cron Tasks</summary>
   
 Place the .sh files in `koios-lite/cron-jobs-extra` and edit the `koios-lite/cron-schedule`. Then rebuild the `koios-lite` container.
+  
+</details>
+ 
+<details>
+  <summary>GraphQL</summary>
+  
+The Ray Network team is busy with other projects, so Postgraphile graphql resolvers will be developed in the near future. Stay tuned!
   
 </details>
