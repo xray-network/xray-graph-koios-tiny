@@ -63,10 +63,10 @@ docker compose -p preview up -d --build
 
 ## OpenAPI Sandbox
   
-Visit https://api.koios.rest/ for API testing and usage (accessing, filtering, sorting, etc...). CURL examples:
+Visit https://api.koios.rest/ for API testing and usage (accessing, filtering, sorting, etc...). CURL examples (rpc and view tables):
   
 ``` console
-curl 0.0.0.0:8050/tip
+curl 0.0.0.0:8050/rpc/tip
 ```
 ``` console
 curl 0.0.0.0:8050/blocks
