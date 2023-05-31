@@ -20,8 +20,6 @@ cp .env.example .env
   
 #### Build and Run via Docker Compose
   
->If you are restoring the database (RESTORE_SNAPSHOT flag), make sure that the koios-lite container is stopped. It should be started as soon as cardano-db-sync picks up the last blocks from the node (you can check this with `docker compose logs cardano-db-sync`). And then run `docker compose start koios-lite`. [Issue #3](https://github.com/ray-network/raygraph-output/issues/3)
-  
 <details open>
   <summary>MAINNET</summary>
 
@@ -31,6 +29,9 @@ RESTORE_SNAPSHOT=https://update-cardano-mainnet.iohk.io/cardano-db-sync/13.1/db-
 docker compose up -d --build && \
 docker compose stop koios-lite
 ```
+  
+>If you are restoring the database (RESTORE_SNAPSHOT flag), make sure that the koios-lite container is stopped. It should be started as soon as cardano-db-sync picks up the last blocks from the node (you can check this with `docker compose logs cardano-db-sync`). This procedure takes about 4 hours with epoch 413 snapshot when using a fast NVMe SSD (~1M IOPS), keep that in mind. And then run `docker compose start koios-lite`. [Issue #3](https://github.com/ray-network/raygraph-output/issues/3)
+  
 </details>
   
 <details>
