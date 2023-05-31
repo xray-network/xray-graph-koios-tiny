@@ -40,7 +40,7 @@ docker compose stop koios-lite
 ``` console
 NETWORK=preprod \
 KOIOS_LITE_PORT=8051 \
-SUBMITTX_PORT=8701
+SUBMITTX_PORT=8701 \
 OGMIOS_PORT=1338 \
 docker compose -p preprod up -d --build
 ```
@@ -53,7 +53,7 @@ docker compose -p preprod up -d --build
 ``` console
 NETWORK=preview \
 KOIOS_LITE_PORT=8052 \
-SUBMITTX_PORT=8702
+SUBMITTX_PORT=8702 \
 OGMIOS_PORT=1339 \
 docker compose -p preview up -d --build
 ```
