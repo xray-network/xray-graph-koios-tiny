@@ -42,6 +42,7 @@ NETWORK=preprod \
 KOIOS_LITE_PORT=8051 \
 SUBMITTX_PORT=8701 \
 OGMIOS_PORT=1338 \
+POSTGRES_PORT=5433 \
 docker compose -p preprod up -d --build
 ```
 
@@ -55,6 +56,7 @@ NETWORK=preview \
 KOIOS_LITE_PORT=8052 \
 SUBMITTX_PORT=8702 \
 OGMIOS_PORT=1339 \
+POSTGRES_PORT=5434 \
 docker compose -p preview up -d --build
 ```
 
