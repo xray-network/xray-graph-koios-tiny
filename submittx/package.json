@@ -2,7 +2,7 @@
   "name": "submittx",
   "version": "1.0.0",
   "description": "",
-  "author": "Ray Robot <hello@raynetwork.io>",
+  "author": "Ray Network <hello@raynetwork.io>",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
