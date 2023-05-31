@@ -10,7 +10,7 @@ services:
       - 127.0.0.1:${POSTGRES_PORT:-5432}:5432
     shm_size: '2gb'
     volumes:
-      - ./config/postgresql.conf:/var/lib/postgresql/data/postgresql.conf
+#      - ./config/postgresql.conf:/var/lib/postgresql/data/postgresql.conf
       - postgres-data:/var/lib/postgresql/data
     restart: on-failure
     logging:
