@@ -6,7 +6,7 @@ const PORT = 8700
 const HOST = '0.0.0.0'
 
 const app = express()
-app.use(express.text())
+app.use(express.text({type:"*/*"}))
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*')
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
