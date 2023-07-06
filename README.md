@@ -96,7 +96,7 @@ server {
         listen 80;
         listen [::]:80;
 
-        server_name mainnet.blockchain.raygraph.io;
+        server_name output.mainnet.raygraph.io;
 
         location = / {
                 proxy_pass http://0.0.0.0:8050;
@@ -120,7 +120,7 @@ server {
         ssl_certificate /ssl/raygraph.io.crt;
         ssl_certificate_key /ssl/raygraph.io.key;
 
-        server_name mainnet.blockchain.raygraph.io;
+        server_name output.mainnet.raygraph.io;
 
         location = / {
                 proxy_pass http://0.0.0.0:8050;
