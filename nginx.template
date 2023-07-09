@@ -1,21 +1,16 @@
 server {
         listen 80;
         listen [::]:80;
-
         server_name output.mainnet.raygraph.io;
-
         location = / {
                 proxy_pass http://0.0.0.0:8050;
         }
-
         location / {
                 proxy_pass http://0.0.0.0:8050/rpc/;
         }
-
         location ~ /(account_list\b|asset_list\b|asset_token_registry\b|blocks\b) {
                 proxy_pass http://0.0.0.0:8050;
         }
-
         location /submittx {
                 proxy_pass http://0.0.0.0:8700;
         }
@@ -25,21 +20,16 @@ server {
         listen 443 ssl;
         ssl_certificate /ssl/raygraph.io.crt;
         ssl_certificate_key /ssl/raygraph.io.key;
-
         server_name output.mainnet.raygraph.io;
-
         location = / {
                 proxy_pass http://0.0.0.0:8050;
         }
-
         location / {
                 proxy_pass http://0.0.0.0:8050/rpc/;
         }
-
         location ~ /(account_list\b|asset_list\b|asset_token_registry\b|blocks\b) {
                 proxy_pass http://0.0.0.0:8050;
         }
-
         location /submittx {
                 proxy_pass http://0.0.0.0:8700;
         }
