@@ -87,7 +87,7 @@ services:
       context: .
       target: submittx
     ports:
-      - ${SUBMITTX_PORT:-8700}:8700
+      - 127.0.0.1:${SUBMITTX_PORT:-8700}:8700
     depends_on:
       - cardano-node-ogmios
     restart: on-failure
