@@ -21,7 +21,7 @@ cp .env.example .env
 #### Build and Run via Docker Compose
   
 <details open>
-  <summary>MAINNET</summary>
+  <summary><b>mainnet</b></summary>
 
 Get the most recent weekly snapshot link [here](https://update-cardano-mainnet.iohk.io/cardano-db-sync/index.html#13.1/), and set it as `RESTORE_SNAPSHOT` below, or omit if you wish to sync from genesis.
 ``` console
@@ -35,7 +35,7 @@ docker compose stop koios-lite
 </details>
   
 <details>
-  <summary>PREPROD</summary>
+  <summary><b>preprod</b></summary>
 
 ``` console
 NETWORK=preprod \
@@ -49,7 +49,7 @@ docker compose -p preprod up -d --build
 </details>
   
 <details>
-  <summary>PREVIEW</summary>
+  <summary><b>preview</b></summary>
 
 ``` console
 NETWORK=preview \
