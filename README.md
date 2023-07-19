@@ -83,7 +83,53 @@ curl 0.0.0.0:8050/blocks
 We recommend to use `koios-tiny-client`. Visit https://github.com/ray-network/koios-tiny-client for more information.
   
 ## Advanced Usage
-  
+<details>
+  <summary>Nginx Template</summary>
+
+By default, all container ports are bound to 127.0.0.1, so these ports are not available outside the server. Replace `127.0.0.1:${KOIOS_LITE_PORT:-8050}:8050` with `${KOIOS_LITE_PORT:-8050}:8050` if you want to open ports for external access.
+
+Nginx should handle routes with this configuration (see `nginx.template` file):
+
+``` nginx
+server {
+        listen 80;
+        listen [::]:80;
+        server_name output.mainnet.raygraph.io;
+        location = / {
+                proxy_pass http://0.0.0.0:8050;
+        }
+        location / {
+                proxy_pass http://0.0.0.0:8050/rpc/;
+        }
+        location ~ /(account_list\b|asset_list\b|asset_token_registry\b|blocks\b) {
+                proxy_pass http://0.0.0.0:8050;
+        }
+        location /submittx {
+                proxy_pass http://0.0.0.0:8700;
+        }
+}
+server {
+        listen 443 ssl;
+        ssl_certificate /ssl/raygraph.io.crt;
+        ssl_certificate_key /ssl/raygraph.io.key;
+        server_name output.mainnet.raygraph.io;
+        location = / {
+                proxy_pass http://0.0.0.0:8050;
+        }
+        location / {
+                proxy_pass http://0.0.0.0:8050/rpc/;
+        }
+        location ~ /(account_list\b|asset_list\b|asset_token_registry\b|blocks\b) {
+                proxy_pass http://0.0.0.0:8050;
+        }
+        location /submittx {
+                proxy_pass http://0.0.0.0:8700;
+        }
+}
+```
+
+</details>
+
 <details>
   <summary>Custom RPCs</summary>
 
