@@ -129,6 +129,15 @@ server {
 ```
 
 </details>
+ 
+<details>
+  <summary>Postgres Config</summary>
+  
+Config file (see end of file): https://github.com/ray-network/raygraph-output/blob/main/config/postgresql.conf<br/>
+Use https://pgtune.leopard.in.ua/ to tune the database settings
+
+  
+</details>
 
 <details>
   <summary>Custom RPCs</summary>
