@@ -38,7 +38,8 @@ kill_cron_psql_process() {
   output=$(psql "${PGDATABASE}" -v "ON_ERROR_STOP=1" -qt \
     -c "select grest.get_query_pids_partial_match('${update_function}');" |
       awk 'BEGIN {ORS = " "} {print $1}' | xargs echo -n)
-  [[ -n "${output}" ]] && echo ${output} | xargs sudo kill -SIGTERM > /dev/null
+  printf "\n      Process : ${update_function} PID: \e[32m${output}\e[0m"
+  [[ -n "${output}" ]] && psql "${PGDATABASE}" -c "select pg_terminate_backend('${output}');" > /dev/null
 }
 
 reset_grest_schema() {
@@ -49,9 +50,9 @@ reset_grest_schema() {
   kill_cron_psql_process "epoch-info-cache-update"
   kill_cron_psql_process "pool-history-cache-update"
   kill_cron_psql_process "populate-next-epoch-nonce"
-  kill_cron_psql_process "stake-distribution-new-accounts-update"
-  kill_cron_psql_process "stake-distribution-update"
-  kill_cron_psql_process "stake-snapshot-cache"
+  kill_cron_psql_process "update-newly-registered-accounts-stake-distribution-cache"
+  kill_cron_psql_process "stake-distribution-cache-update-check"
+  kill_cron_psql_process "capture-last-epoch-snapshot"
   printf "\n  Done!"
 
   printf "\nResetting grest schema if exists from previous installations..."
@@ -190,12 +191,12 @@ deploy_koios() {
   if [[ $? -eq 1 ]]; then
     err_exit "Please wait for Cardano DBSync to populate PostgreSQL DB at least until Alonzo fork"
   fi
-  setup_db_basics
+
   reset_grest_schema
   setup_db_basics
   deploy_query_updates
 
-  echo "" > ./.success
+  touch .success
   printf "\n\nSERVICES INSTALLED! ALL GOOD!\n\n\n"
 }
 
