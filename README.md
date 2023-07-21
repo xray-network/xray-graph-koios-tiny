@@ -1,7 +1,3 @@
-<a href="https://discord.gg/WhZmm46APN">
-  <img src="https://img.shields.io/discord/852538978946383893?label=Discord&style=for-the-badge"
-</a>
-  
 # RayGraph Output — Cardano Explorer API
 
 RayGraph-Output is a dockered Cardano blockchain explorer API tool based on [Koios](https://koios.rest) and [Cardano-Db-Sync](https://github.com/input-output-hk/cardano-db-sync). Extended with GraphQL (Postgraphile custom resolvers). Visit [RayGraph.io](https://raygraph.io) for more information.
