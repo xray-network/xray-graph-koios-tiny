@@ -22,8 +22,7 @@ cp .env.example .env
 Get the most recent weekly snapshot link [here](https://update-cardano-mainnet.iohk.io/cardano-db-sync/index.html#13.1/), and set it as `RESTORE_SNAPSHOT` below, or omit if you wish to sync from genesis.
 ``` console
 RESTORE_SNAPSHOT=https://update-cardano-mainnet.iohk.io/cardano-db-sync/13.1/db-sync-snapshot-schema-13.1-block-8841781-x86_64.tgz \
-docker compose up -d --build && \
-docker compose stop koios-lite
+docker compose up -d --build
 ```
 
 </details>
