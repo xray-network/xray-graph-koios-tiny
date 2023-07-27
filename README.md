@@ -25,6 +25,8 @@ RESTORE_SNAPSHOT=https://update-cardano-mainnet.iohk.io/cardano-db-sync/13.1/db-
 docker compose up -d --build
 ```
 
+> Restoring from snapshot takes about 5 hours on epoch 413 with using a fast NVMe SSD (~1M IOPS). Also after restoring db-sync snapshot, it will take some time to run koios cron jobs, about 6 hours, so keep that in mind. 
+
 </details>
   
 <details>
