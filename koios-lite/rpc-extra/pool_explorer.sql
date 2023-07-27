@@ -82,16 +82,16 @@ BEGIN
       pm.json::jsonb,
       pl.pool_status,
       pl.retiring_epoch,
-      ex.block_count,
-      ex.active_stake,
-      ex.sigma,
-      ex.live_pledge,
-      ex.live_stake,
-      ex.live_delegators,
-      ex.live_saturation,
-      ex.last_epoch_ros,
-      ex.last_30d_avg_ros,
-      ex.last_90d_avg_ros
+      COALESCE(ex.block_count, 0)::int8,
+      COALESCE(ex.active_stake, 0)::lovelace,
+      COALESCE(ex.sigma, 0)::numeric,
+      COALESCE(ex.live_pledge, 0)::lovelace,
+      COALESCE(ex.live_stake, 0)::lovelace,
+      COALESCE(ex.live_delegators, 0)::numeric,
+      COALESCE(ex.live_saturation, 0)::numeric,
+      COALESCE(ex.last_epoch_ros, 0)::numeric,
+      COALESCE(ex.last_30d_avg_ros, 0)::numeric,
+      COALESCE(ex.last_90d_avg_ros, 0)::numeric
     FROM
       _pool_list AS pl
       LEFT JOIN _pool_meta AS pm ON pl.pool_id_bech32 = pm.pool_id_bech32
