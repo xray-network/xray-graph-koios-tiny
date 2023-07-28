@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION grest.pool_explorer ()
+CREATE OR REPLACE FUNCTION grest.pool_explorer (_pool_bech32_ids text[])
   RETURNS TABLE (
     pool_id_bech32 character varying,
     pool_id_hex text,
@@ -47,6 +47,8 @@ BEGIN
           *
         FROM
           grest.pool_info_cache AS pic
+        WHERE
+          pic.pool_id_bech32 = ANY(SELECT UNNEST(_pool_bech32_ids))
         ORDER BY
           pic.pool_id_bech32,
           pic.tx_id DESC
@@ -103,4 +105,5 @@ BEGIN
 END;
 $$;
 
-COMMENT ON FUNCTION grest.pool_explorer () IS 'Return pool explorer live metrics (block count in current epoch, live stake, delegators count, etc...)';
+COMMENT ON FUNCTION grest.pool_explorer(text[]) IS 'Return pool explorer live metrics (block count in current epoch, live stake, delegators count, etc...)';
+
