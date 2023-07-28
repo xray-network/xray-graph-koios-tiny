@@ -65,7 +65,7 @@ BEGIN
     pl.pool_id_hex,
     COALESCE(block_data.cnt, 0),
     COALESCE(active_stake.as_sum, 0)::lovelace,
-    COALESCE(active_stake.as_sum / epoch_stake.es_sum, 0)::lovelace,
+    COALESCE(active_stake.as_sum / epoch_stake.es_sum, 0)::numeric,
     COALESCE(live.pledge, 0)::lovelace,
     COALESCE(live.stake, 0)::lovelace,
     COALESCE(live.delegators, 0)::numeric,
