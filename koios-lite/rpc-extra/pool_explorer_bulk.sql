@@ -1,3 +1,4 @@
+DROP FUNCTION grest.pool_explorer(text[]);
 CREATE OR REPLACE FUNCTION grest.pool_explorer (_pool_bech32_ids text[])
   RETURNS TABLE (
     pool_id_bech32 character varying,
