@@ -1,3 +1,4 @@
+DROP FUNCTION grest.pool_explorer();
 CREATE OR REPLACE FUNCTION grest.pool_explorer ()
   RETURNS TABLE (
     pool_id_bech32 character varying,
@@ -19,7 +20,8 @@ CREATE OR REPLACE FUNCTION grest.pool_explorer ()
     live_saturation numeric,
     last_epoch_ros numeric,
     last_30d_avg_ros numeric,
-    last_90d_avg_ros numeric
+    last_90d_avg_ros numeric,
+    ros_history jsonb
   )
   LANGUAGE plpgsql
   AS $$
@@ -90,7 +92,8 @@ BEGIN
       COALESCE(ex.live_saturation, 0)::numeric,
       COALESCE(ex.last_epoch_ros, 0)::numeric,
       COALESCE(ex.last_30d_avg_ros, 0)::numeric,
-      COALESCE(ex.last_90d_avg_ros, 0)::numeric
+      COALESCE(ex.last_90d_avg_ros, 0)::numeric,
+      COALESCE(ex.ros_history, JSONB_BUILD_ARRAY())::jsonb
     FROM
       _pool_list AS pl
       LEFT JOIN _pool_meta AS pm ON pl.pool_id_bech32 = pm.pool_id_bech32

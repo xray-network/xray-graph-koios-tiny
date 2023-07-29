@@ -13,7 +13,8 @@ CREATE TABLE grest.pool_explorer_cache (
   live_saturation numeric NOT NULL,
   last_epoch_ros numeric NOT NULL,
   last_30d_avg_ros numeric NOT NULL,
-  last_90d_avg_ros numeric NOT NULL
+  last_90d_avg_ros numeric NOT NULL,
+  ros_history jsonb
 );
 
 COMMENT ON TABLE grest.pool_explorer_cache IS 'Pools live summary statistics';
@@ -47,7 +48,8 @@ BEGIN
     live_saturation,
     last_epoch_ros,
     last_30d_avg_ros,
-    last_90d_avg_ros
+    last_90d_avg_ros,
+    ros_history
   )
   WITH
     _pool_list AS (
@@ -72,7 +74,8 @@ BEGIN
     COALESCE(ROUND((live.stake / _saturation_limit) * 100, 2), 0)::numeric,
     COALESCE(prev_ros.ros, 0)::numeric,
     COALESCE(avg_30_ros.ros, 0)::numeric,
-    COALESCE(avg_90_ros.ros, 0)::numeric
+    COALESCE(avg_90_ros.ros, 0)::numeric,
+    COALESCE(ros_history.history, JSONB_BUILD_ARRAY())::jsonb
   FROM
     _pool_list AS pl
 
@@ -165,6 +168,22 @@ BEGIN
         phc.epoch_no BETWEEN _epoch_no - 18 AND _epoch_no - 2
     ) avg_90_ros ON TRUE
 
+    LEFT JOIN LATERAL(
+      SELECT
+        JSONB_AGG(
+          JSONB_BUILD_OBJECT(
+            'epoch_no', epoch_no,
+            'epoch_ros', epoch_ros
+          )
+        ) as history
+      FROM
+        grest.pool_history_cache AS phc
+      WHERE
+        phc.pool_id = pl.pool_id_bech32
+        AND
+        phc.epoch_no BETWEEN _epoch_no - 8 AND _epoch_no - 2
+    ) ros_history ON TRUE
+
   WHERE
     pl.pool_status != 'retired'
 
@@ -179,7 +198,8 @@ BEGIN
     live_saturation = EXCLUDED.live_saturation,
     last_epoch_ros = EXCLUDED.last_epoch_ros,
     last_30d_avg_ros = EXCLUDED.last_30d_avg_ros,
-    last_90d_avg_ros = EXCLUDED.last_90d_avg_ros;
+    last_90d_avg_ros = EXCLUDED.last_90d_avg_ros,
+    ros_history = EXCLUDED.ros_history;
 
 END;
 $$;
