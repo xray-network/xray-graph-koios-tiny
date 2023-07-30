@@ -5,6 +5,7 @@ CREATE TABLE grest.pool_explorer_cache (
   pool_id_bech32 character varying NOT NULL PRIMARY KEY UNIQUE,
   pool_id_hex text NOT NULL,
   block_count int8 NOT NULL,
+  curr_epoch_block_count int8 NOT NULL,
   active_stake lovelace NOT NULL,
   sigma numeric NOT NULL,
   live_pledge lovelace NOT NULL,
@@ -40,6 +41,7 @@ BEGIN
     pool_id_bech32,
     pool_id_hex,
     block_count,
+    curr_epoch_block_count,
     active_stake,
     sigma,
     live_pledge,
@@ -66,6 +68,7 @@ BEGIN
     pl.pool_id_bech32,
     pl.pool_id_hex,
     COALESCE(block_data.cnt, 0),
+    COALESCE(block_data_current.cnt, 0),
     COALESCE(active_stake.as_sum, 0)::lovelace,
     COALESCE(active_stake.as_sum / epoch_stake.es_sum, 0)::numeric,
     COALESCE(live.pledge, 0)::lovelace,
@@ -90,6 +93,20 @@ BEGIN
         sl.pool_hash_id = pl.pool_hash_id
       LIMIT 1
     ) block_data ON TRUE
+
+    LEFT JOIN LATERAL (
+      SELECT
+        SUM(COUNT(b.id)) OVER () AS cnt
+      FROM
+        public.block AS b
+      INNER JOIN
+        public.slot_leader AS sl ON b.slot_leader_id = sl.id
+      WHERE
+        sl.pool_hash_id = pl.pool_hash_id
+        AND
+        b.epoch_no = _epoch_no
+      LIMIT 1
+    ) block_data_current ON TRUE
 
     LEFT JOIN LATERAL(
       SELECT
