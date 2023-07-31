@@ -207,6 +207,7 @@ BEGIN
   ON CONFLICT (pool_id_bech32)
   DO UPDATE SET
     block_count = EXCLUDED.block_count,
+    curr_epoch_block_count = EXCLUDED.curr_epoch_block_count,
     active_stake = EXCLUDED.active_stake,
     sigma = EXCLUDED.sigma,
     live_pledge = EXCLUDED.live_pledge,
