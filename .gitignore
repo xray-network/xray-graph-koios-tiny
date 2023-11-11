@@ -22,7 +22,3 @@ yarn-error.log
 # dotenv environment variable files
 .env*
 !.env.example
-
-#SSL
-config/nginx/ssl/*
-!config/nginx/ssl/.gitkeep

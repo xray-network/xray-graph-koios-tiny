@@ -33,26 +33,10 @@ check_db_status() {
   return 0
 }
 
-kill_cron_psql_process() {
-  local update_function=$(echo ${1} | tr '-' '_')
-  output=$(psql "${PGDATABASE}" -v "ON_ERROR_STOP=1" -qt \
-    -c "select grest.get_query_pids_partial_match('${update_function}');" |
-      awk 'BEGIN {ORS = " "} {print $1}' | xargs echo -n)
-  printf "\n      Process : ${update_function} PID: \e[32m${output}\e[0m"
-  [[ -n "${output}" ]] && psql "${PGDATABASE}" -c "select pg_terminate_backend('${output}');" > /dev/null
-}
-
 reset_grest_schema() {
   printf "\nKilling related PSQL cron jobs..."
-  kill_cron_psql_process "active-stake-cache-update"
-  kill_cron_psql_process "asset-info-cache-update"
-  kill_cron_psql_process "asset-registry-update"
-  kill_cron_psql_process "epoch-info-cache-update"
-  kill_cron_psql_process "pool-history-cache-update"
-  kill_cron_psql_process "populate-next-epoch-nonce"
-  kill_cron_psql_process "update-newly-registered-accounts-stake-distribution-cache"
-  kill_cron_psql_process "stake-distribution-cache-update-check"
-  kill_cron_psql_process "capture-last-epoch-snapshot"
+  psql "${PGDATABASE}" -qt -c "SELECT PG_CANCEL_BACKEND(pid) FROM pg_stat_activity WHERE usename='${POSTGRES_USER}' AND application_name = 'psql' AND query NOT LIKE '%pg_stat_activity%';" &>/dev/null
+  psql "${PGDATABASE}" -qt -c "SELECT PG_TERMINATE_BACKEND(pid) FROM pg_stat_activity WHERE usename='${POSTGRES_USER}' AND application_name = 'psql' AND query NOT LIKE '%pg_stat_activity%';" &>/dev/null
   printf "\n  Done!"
 
   printf "\nResetting grest schema if exists from previous installations..."
@@ -60,7 +44,7 @@ reset_grest_schema() {
   if ! reset_sql=$(< $reset_sql_url); then
     err_exit "Failed to get reset grest SQL from ${reset_sql_url}."
   fi
-  ! output=$(psql "${PGDATABASE}" -v "ON_ERROR_STOP=1" -q <<<${reset_sql} 2>&1) && err_exit "${output}"
+  ! output=$(psql "${PGDATABASE}" -q <<<${reset_sql} 2>&1) && err_exit "${output}"
   printf "\n  Done!\n\n"
 }
 
@@ -73,19 +57,6 @@ setup_db_basics() {
   printf "\nAdding grest schema if missing and granting usage for web_anon..."
   ! output=$(psql "${PGDATABASE}" -v "ON_ERROR_STOP=1" -q <<<${basics_sql} 2>&1) && err_exit "${output}"
   return 0
-}
-
-insert_genesis_table_data() {
-  local alonzo_genesis=$1
-  shift
-  local shelley_genesis=("$@")
-
-  psql "${PGDATABASE}" -c "INSERT INTO grest.genesis VALUES (
-    '${shelley_genesis[4]}', '${shelley_genesis[2]}', '${shelley_genesis[0]}',
-    '${shelley_genesis[1]}', '${shelley_genesis[3]}', '${shelley_genesis[5]}',
-    '${shelley_genesis[6]}', '${shelley_genesis[7]}', '${shelley_genesis[8]}',
-    '${shelley_genesis[9]}', '${shelley_genesis[10]}', '${alonzo_genesis}'
-  );" > /dev/null
 }
 
 insert_genesis_table_data() {
@@ -162,16 +133,16 @@ deploy_rpc() {
 }
 
 deploy_rpcs() {
-  printf "\n\n    Execution pSQL from subdir \"/\""
-  for f in ${RPC_SCRIPTS_DIR}/*.sql; do
-    deploy_rpc $f
-  done
-
   for d in $RPC_SCRIPTS_DIR/*/; do
     printf "\n\n    Execution pSQL from subdir \"$(basename $d)\""
     for f in $d*.sql; do
       deploy_rpc $f
     done
+  done
+
+  printf "\n\n    Execution pSQL from subdir \"/\" (Extra RPCs)"
+  for f in ${RPC_SCRIPTS_DIR}/*.sql; do
+    deploy_rpc $f
   done
 }
 

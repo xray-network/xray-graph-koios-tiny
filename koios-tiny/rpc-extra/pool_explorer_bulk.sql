@@ -1,5 +1,5 @@
-DROP FUNCTION grest.pool_explorer();
-CREATE OR REPLACE FUNCTION grest.pool_explorer ()
+DROP FUNCTION IF EXISTS grest.pool_explorer(text[]);
+CREATE OR REPLACE FUNCTION grest.pool_explorer (_pool_bech32_ids text[])
   RETURNS TABLE (
     pool_id_bech32 character varying,
     pool_id_hex text,
@@ -35,11 +35,10 @@ DECLARE
 BEGIN
 
   SELECT MAX(epoch.no) INTO _epoch_no FROM public.epoch;
-
   SELECT FLOOR(supply::bigint / (
-      SELECT p_optimal_pool_count
-      FROM grest.epoch_info_cache
-      WHERE epoch_no = _epoch_no
+      SELECT ep.optimal_pool_count
+      FROM epoch_param AS ep
+      WHERE ep.epoch_no = _epoch_no
     ))::bigint INTO _saturation_limit FROM grest.totals(_epoch_no);
 
   RETURN QUERY (
@@ -50,6 +49,8 @@ BEGIN
           *
         FROM
           grest.pool_info_cache AS pic
+        WHERE
+          pic.pool_id_bech32 = ANY(SELECT UNNEST(_pool_bech32_ids))
         ORDER BY
           pic.pool_id_bech32,
           pic.tx_id DESC
@@ -108,4 +109,5 @@ BEGIN
 END;
 $$;
 
-COMMENT ON FUNCTION grest.pool_explorer () IS 'Return pool explorer live metrics (block count in current epoch, live stake, delegators count, etc...)';
+COMMENT ON FUNCTION grest.pool_explorer(text[]) IS 'Return pool explorer live metrics (block count in current epoch, live stake, delegators count, etc...)';
+
