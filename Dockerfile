@@ -20,10 +20,10 @@ COPY config/cardano-configurations cardano-configurations
 COPY koios-tiny/guild-operators/scripts/grest-helper-scripts/db-scripts db-scripts
 
 COPY koios-tiny/koios-artifacts/files/grest/rpc rpc
-COPY koios-tiny/rpc-extra rpc
+COPY koios-tiny/extra-rpc rpc
 
 COPY koios-tiny/koios-artifacts/files/grest/cron/jobs cron
-COPY koios-tiny/cron-jobs-extra cron
+COPY koios-tiny/extra-cron-jobs cron
 COPY koios-tiny/cron-schedule /var/spool/cron/crontabs/postgres
 
 # Adding permissions and setting the cron to run as the "postgres" user
