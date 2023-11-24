@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   postgres:
-    image: postgres:${POSTGRES_VERSION:-12.14-alpine}
+    image: postgres:${POSTGRES_VERSION:-16.1-alpine}
     env_file: ./.env
     environment:
       - POSTGRES_LOGGING=true
@@ -99,7 +99,7 @@ services:
       target: koios-tiny
     env_file: ./.env
     ports:
-      - 127.0.0.1:${KOIOS_LITE_PORT:-8050}:8050
+      - 127.0.0.1:${KOIOS_TINY_PORT:-8050}:8050
     depends_on:
       - postgres
     volumes:
@@ -116,6 +116,10 @@ services:
   haproxy:
     image: haproxy:2.8.3
     env_file: ./.env
+    environment:
+      - OGMIOS_PORT=${OGMIOS_PORT:-1337}
+      - KUPO_PORT=${KUPO_PORT:-1442}
+      - KOIOS_TINY_PORT=${KOIOS_TINY_PORT:-8050}
     ports:
       - ${HAPROXY_PORT:-80}:8080
       - ${HAPROXY_SSL_PORT:-443}:8443
