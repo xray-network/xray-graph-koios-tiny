@@ -4,6 +4,3 @@
 [submodule "koios-artifacts"]
 	path = koios-tiny/koios-artifacts
 	url = https://github.com/cardano-community/koios-artifacts.git
-[submodule "guild-operators"]
-	path = koios-tiny/guild-operators
-	url = https://github.com/cardano-community/guild-operators

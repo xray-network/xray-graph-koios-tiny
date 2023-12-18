@@ -105,6 +105,7 @@ services:
     volumes:
       - db-sync-logs:/home/logs
     environment:
+      - FORCE_RECREATE=${FORCE_RECREATE:-true}
       - NETWORK=${NETWORK:-mainnet}
     restart: on-failure
     logging:

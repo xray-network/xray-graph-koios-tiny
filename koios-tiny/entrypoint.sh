@@ -5,7 +5,6 @@ PGDATABASE=${POSTGRES_DB}
 
 SHELLEY_GENESIS_JSON=${WORKDIR}/cardano-configurations/network/${NETWORK}/genesis/shelley.json
 ALONZO_GENESIS_JSON=${WORKDIR}/cardano-configurations/network/${NETWORK}/genesis/alonzo.json
-DB_SCRIPTS_DIR=${WORKDIR}/db-scripts
 RPC_SCRIPTS_DIR=${WORKDIR}/rpc
 CRON_SCRIPTS_DIR=${WORKDIR}/cron
 
@@ -40,7 +39,7 @@ reset_grest_schema() {
   printf "\n  Done!"
 
   printf "\nResetting grest schema if exists from previous installations..."
-  local reset_sql_url="${DB_SCRIPTS_DIR}/reset_grest.sql"
+  local reset_sql_url="${RPC_SCRIPTS_DIR}/db-scripts/reset_grest.sql"
   if ! reset_sql=$(< $reset_sql_url); then
     err_exit "Failed to get reset grest SQL from ${reset_sql_url}."
   fi
@@ -49,7 +48,7 @@ reset_grest_schema() {
 }
 
 setup_db_basics() {
-  local basics_sql_url="${DB_SCRIPTS_DIR}/basics.sql"
+  local basics_sql_url="${RPC_SCRIPTS_DIR}/db-scripts/basics.sql"
 
   if ! basics_sql=$(< $basics_sql_url); then
     err_exit "Failed to get basic db setup SQL from ${basics_sql_url}"
@@ -108,7 +107,7 @@ setup_cron_jobs() {
       if [[ $NETWORK == "mainnet" ]]
       then
         printf "\n        Custom Rule: Mainnet registry ENV updated!"
-        [[ -d "/var/lib/postgresql/git/cnode-token-registry" ]] && find "/var/lib/postgresql/git/cnode-token-registry" -mindepth 2 -maxdepth 2 -type f -name "*.json" -exec touch {} +
+        [[ -d "${HOME}/git/cnode-token-registry" ]] && find "${HOME}/git/cnode-token-registry" -mindepth 2 -maxdepth 2 -type f -name "*.json" -exec touch {} +
       else
         printf "\n        Custom Rule: Testnet registry ENV updated!"
         sed -e "s@CNODE_VNAME=.*@CNODE_VNAME=cnode@" \
@@ -134,10 +133,14 @@ deploy_rpc() {
 
 deploy_rpcs() {
   for d in $RPC_SCRIPTS_DIR/*/; do
-    printf "\n\n    Execution pSQL from subdir \"$(basename $d)\""
-    for f in $d*.sql; do
-      deploy_rpc $f
-    done
+    if [[ $(basename $d) == 'db-scripts' ]] || [[ $(basename $d) == 'v0' ]]; then
+      printf "\n\n    Skipping unnecessary subdir \"$(basename $d)\""
+    else 
+      printf "\n\n    Execution pSQL from subdir \"$(basename $d)\""
+      for f in $d*.sql; do
+        deploy_rpc $f
+      done
+    fi
   done
 
   printf "\n\n    Execution pSQL from subdir \"/\" (Extra RPCs)"

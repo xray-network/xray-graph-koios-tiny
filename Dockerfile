@@ -17,7 +17,6 @@ COPY --from=postgrest/postgrest /bin/postgrest /bin
 COPY config/postgrest/postgrest.conf .
 COPY koios-tiny/entrypoint.sh .
 COPY config/cardano-configurations cardano-configurations
-COPY koios-tiny/guild-operators/scripts/grest-helper-scripts/db-scripts db-scripts
 
 COPY koios-tiny/koios-artifacts/files/grest/rpc rpc
 COPY koios-tiny/extra-rpc rpc
