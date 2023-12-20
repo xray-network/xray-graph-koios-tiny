@@ -31,11 +31,10 @@ services:
         max-file: "20"
     ports:
       - 127.0.0.1:${OGMIOS_PORT:-1337}:1337
-      - 3000:3000
+      - ${CARDANO_NODE_PORT:-3000}:3000
     volumes:
       - node-db:/db
       - node-ipc:/ipc
-#      - ./config/cardano-node-ogmios/topology.json:/config/cardano-node/topology.json
     restart: on-failure
 
 
