@@ -63,6 +63,10 @@ docker compose -p preview up -d --build
 * Koios — https://api.koios.rest/
 * Ogmios — https://ogmios.dev/api/
 
+Differences with the original Koios:
+
+* `/submittx` endpoint: not available, use XRAY | Graph | Turbo Tx Send API
+* `/ogmios` endpoint: not available, use XRAY | Graph | Ogmios API
 
 ## API Status Check
   
