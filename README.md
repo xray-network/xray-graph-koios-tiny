@@ -7,7 +7,7 @@ XRAY | Graph | Koios Tiny is a dockered Cardano blockchain explorer API tool bas
 ``` console
 git clone \
   --recurse-submodules \
-  https://github.com/ray-network/xray-graph-output.git \
+  https://github.com/xray-network/xray-graph-koios-tiny.git \
   && cd xray-graph-output
 ```
 ``` console
@@ -81,7 +81,7 @@ curl 0.0.0.0:8050/blocks
   
 ## TypeScript Client
   
-We recommend to use `koios-tiny-client`. Visit [koios-tiny-client](https://github.com/ray-network/koios-tiny-client) repo for more information.
+We recommend to use `koios-tiny-client`. Visit [koios-tiny-client](https://github.com/xray-network/koios-tiny-client) repo for more information.
   
 ## Advanced Usage
 <details>
@@ -89,20 +89,20 @@ We recommend to use `koios-tiny-client`. Visit [koios-tiny-client](https://githu
 
 By default, all container ports are bound to 127.0.0.1, so these ports are not available outside the server. Replace `127.0.0.1:${KOIOS_TINY_PORT:-8050}:8050` with `${KOIOS_TINY_PORT:-8050}:8050` if you want to open ports for external access.
 
-Routes are resolved using the `HostResolver` header (this is needed for [XRAY | Graph | Output Load Balancer](https://github.com/ray-network/cloudflare-worker-output-load-balancer)). 
+Routes are resolved using the `HostResolver` header (this is needed for [XRAY | Graph | Output Load Balancer](https://github.com/xray-network/cloudflare-worker-output-load-balancer)). 
 
 Also, time limits on server requests can be disabled (or rather, increased from 30 seconds to 60 minutes) by setting `HAPROXY_JWT_BEARER_TOKEN` in the `.env` file and then passing it over the `BearerResolver` header.
 
 The path to SSL PEM key can be found here `/etc/ssl/xray.pem/`.
 
-Check configuration file here [haproxy.cfg](https://github.com/ray-network/xray-graph-output/blob/main/config/haproxy/haproxy.cfg).
+Check configuration file here [haproxy.cfg](https://github.com/xray-network/xray-graph-output/blob/main/config/haproxy/haproxy.cfg).
 
 </details>
  
 <details>
   <summary>Postgresql Config</summary>
   
-Config file (see end of file): [postgresql.conf](https://github.com/ray-network/xray-graph-output/blob/main/config/postgresql/postgresql.conf)<br/>
+Config file (see end of file): [postgresql.conf](https://github.com/xray-network/xray-graph-output/blob/main/config/postgresql/postgresql.conf)<br/>
 Use https://pgtune.leopard.in.ua/ to tune the database settings
 
 </details>
