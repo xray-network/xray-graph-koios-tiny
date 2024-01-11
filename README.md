@@ -129,3 +129,4 @@ In general, this stack loads the system in the same way as `cardano-db-sync`, so
 * Minimum 1000 Gigabytes or more of SSD disk storage.
   
 When building an application that will be querying the database, remember that for fast queries, low latency disk access is far more important than high throughput (assuming the minimal IOPS above is met).
+
