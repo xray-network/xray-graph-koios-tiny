@@ -8,7 +8,7 @@ XRAY | Graph | Koios Tiny is a dockered Cardano blockchain explorer API tool bas
 git clone \
   --recurse-submodules \
   https://github.com/xray-network/xray-graph-koios-tiny.git \
-  && cd xray-graph-output
+  && cd xray-graph-koios-tiny
 ```
 ``` console
 cp .env.example .env
