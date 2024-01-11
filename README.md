@@ -1,6 +1,6 @@
-# XRAY | Graph | Output — Cardano Explorer API
+# XRAY | Graph | Koios Tiny — Cardano Explorer API
 
-XRAY | Graph | Output is a dockered Cardano blockchain explorer API tool based on [Koios](https://koios.rest) and [Cardano-Db-Sync](https://github.com/input-output-hk/cardano-db-sync). For easy deployment additionally includes [Kupo](https://cardanosolutions.github.io/kupo/) / [Ogmios](https://ogmios.dev).
+XRAY | Graph | Koios Tiny is a dockered Cardano blockchain explorer API tool based on [Koios](https://koios.rest) and [Cardano-Db-Sync](https://github.com/input-output-hk/cardano-db-sync). With some custom RPCs added.
 
 ## Getting Started
 
@@ -37,7 +37,6 @@ NETWORK=preprod \
 CARDANO_NODE_PORT=3001 \
 KOIOS_TINY_PORT=8051 \
 OGMIOS_PORT=1338 \
-KUPO_PORT=1443 \
 POSTGRES_PORT=5433 \
 docker compose -p preprod up -d --build
 ```
@@ -52,7 +51,6 @@ NETWORK=preview \
 CARDANO_NODE_PORT=3002 \
 KOIOS_TINY_PORT=8052 \
 OGMIOS_PORT=1339 \
-KUPO_PORT=1444 \
 POSTGRES_PORT=5434 \
 docker compose -p preview up -d --build
 ```
@@ -64,12 +62,11 @@ docker compose -p preview up -d --build
   
 * Koios — https://api.koios.rest/
 * Ogmios — https://ogmios.dev/api/
-* Koios — https://cardanosolutions.github.io/kupo/
 
 
 ## API Status Check
   
-Raw CURL query examples (rpc and view tables, without Nginx routes handling):
+Raw CURL query examples (rpc and view tables, without HAproxy routes handling):
   
 ``` console
 curl 0.0.0.0:8050/rpc/tip
