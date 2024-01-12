@@ -12,6 +12,9 @@ git clone \
   https://github.com/xray-network/xray-graph-koios-tiny.git \
   && cd xray-graph-koios-tiny
 ```
+``` console
+cp .env.example .env
+```
   
 #### Build and Run via Docker Compose
   
