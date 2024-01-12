@@ -1,3 +1,5 @@
+<a href="https://discord.gg/WhZmm46APN"><img alt="Discord" src="https://img.shields.io/discord/852538978946383893?style=for-the-badge&logo=discord&label=Discord&labelColor=%231940ED&color=%233FCB9B"></a>
+
 # XRAY | Graph | Koios Tiny — Cardano Explorer API
 
 XRAY | Graph | Koios Tiny is a dockered Cardano blockchain explorer API tool based on [Koios](https://koios.rest) and [Cardano-Db-Sync](https://github.com/input-output-hk/cardano-db-sync). With some custom RPCs added.
@@ -10,14 +12,11 @@ git clone \
   https://github.com/xray-network/xray-graph-koios-tiny.git \
   && cd xray-graph-koios-tiny
 ```
-``` console
-cp .env.example .env
-```
   
 #### Build and Run via Docker Compose
   
 <details open>
-  <summary><b>mainnet</b></summary>
+  <summary><b>MAINNET</b></summary>
 
 Get the most recent weekly snapshot link [here](https://snapshots.koios.rest/db-sync-13.1-mainnet/) (with db-sync started with `--consumed-tx-out` flag) or [here](https://update-cardano-mainnet.iohk.io/cardano-db-sync/index.html#13.1/) (without flag, takes a lot longer to restore), and set it as `RESTORE_SNAPSHOT` below, or omit if you wish to sync from genesis.
 ``` console
@@ -30,7 +29,15 @@ docker compose up -d --build
 </details>
   
 <details>
-  <summary><b>preprod</b></summary>
+  <summary><b>PREPROD</b></summary>
+
+Default
+
+``` console
+NETWORK=preprod docker compose up -d --build
+```
+
+Advanced usage (ports mapping, containers name change)
 
 ``` console
 NETWORK=preprod \
@@ -44,7 +51,15 @@ docker compose -p preprod up -d --build
 </details>
   
 <details>
-  <summary><b>preview</b></summary>
+  <summary><b>PREVIEW</b></summary>
+
+Default
+
+``` console
+NETWORK=preview docker compose up -d --build
+```
+
+Advanced usage (ports mapping, containers name change)
 
 ``` console
 NETWORK=preview \
@@ -70,13 +85,13 @@ Differences with the original Koios:
 
 ## API Status Check
   
-Raw CURL query examples (rpc and view tables, without HAproxy routes handling):
+Raw CURL query examples:
   
 ``` console
 curl 0.0.0.0:8050/rpc/tip
 ```
 ``` console
-curl 0.0.0.0:8050/blocks
+curl 0.0.0.0:8050/rpc/blocks
 ```
   
 ## TypeScript Client
@@ -84,20 +99,6 @@ curl 0.0.0.0:8050/blocks
 We recommend to use `koios-tiny-client`. Visit [koios-tiny-client](https://github.com/xray-network/koios-tiny-client) repo for more information.
   
 ## Advanced Usage
-<details>
-  <summary>HAProxy</summary>
-
-By default, all container ports are bound to 127.0.0.1, so these ports are not available outside the server. Replace `127.0.0.1:${KOIOS_TINY_PORT:-8050}:8050` with `${KOIOS_TINY_PORT:-8050}:8050` if you want to open ports for external access.
-
-Routes are resolved using the `HostResolver` header (this is needed for [XRAY | Graph | Output Load Balancer](https://github.com/xray-network/cloudflare-worker-output-load-balancer)). 
-
-Also, time limits on server requests can be disabled (or rather, increased from 30 seconds to 60 minutes) by setting `HAPROXY_JWT_BEARER_TOKEN` in the `.env` file and then passing it over the `BearerResolver` header.
-
-The path to SSL PEM key can be found here `/etc/ssl/xray.pem/`.
-
-Check configuration file here [haproxy.cfg](https://github.com/xray-network/xray-graph-output/blob/main/config/haproxy/haproxy.cfg).
-
-</details>
  
 <details>
   <summary>Postgresql Config</summary>
