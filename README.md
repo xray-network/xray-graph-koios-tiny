@@ -21,6 +21,8 @@ cp .env.example .env
 <details open>
   <summary><b>MAINNET</b></summary>
 
+Default
+
 Get the most recent weekly snapshot link [here](https://snapshots.koios.rest/db-sync-13.1-mainnet/) (with db-sync started with `--consumed-tx-out` flag) or [here](https://update-cardano-mainnet.iohk.io/cardano-db-sync/index.html#13.1/) (without flag, takes a lot longer to restore), and set it as `RESTORE_SNAPSHOT` below, or omit if you wish to sync from genesis.
 ``` console
 RESTORE_SNAPSHOT=https://snapshots.koios.rest/db-sync-13.1-mainnet/db-sync-snapshot-schema-13.1-block-9684674-x86_64.tgz \
@@ -28,6 +30,12 @@ docker compose up -d --build
 ```
 
 > Restoring from snapshot takes about 5 hours on epoch 413 with using a fast NVMe SSD (~1M IOPS). Also after restoring db-sync snapshot, it will take some time to run koios cron jobs, about 6 hours, so keep that in mind. 
+
+With HAProxy
+
+``` console
+docker compose --profile haproxy up -d --build
+```
 
 </details>
   
@@ -38,6 +46,12 @@ Default
 
 ``` console
 NETWORK=preprod docker compose up -d --build
+```
+
+With HAProxy
+
+``` console
+NETWORK=preprod docker compose --profile haproxy up -d --build
 ```
 
 Advanced usage (ports mapping, containers name change)
@@ -60,6 +74,12 @@ Default
 
 ``` console
 NETWORK=preview docker compose up -d --build
+```
+
+With HAProxy
+
+``` console
+NETWORK=preview docker compose --profile haproxy up -d --build
 ```
 
 Advanced usage (ports mapping, containers name change)
