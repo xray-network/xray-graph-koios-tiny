@@ -100,7 +100,6 @@ services:
       - cardano-node-ogmios
       - cardano-db-sync
       - koios-tiny
-    profiles: [haproxy]
     shm_size: '2gb'
     volumes:
       - ./config/haproxy:/usr/local/etc/haproxy
