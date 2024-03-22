@@ -2,7 +2,8 @@
 
 # XRAY | Graph | Koios Tiny — Cardano Explorer API
 
-XRAY | Graph | Koios Tiny is a dockered Cardano blockchain explorer API tool based on [Koios](https://koios.rest) and [Cardano-Db-Sync](https://github.com/input-output-hk/cardano-db-sync). With some custom RPCs added.
+> [!NOTE]
+> XRAY | Graph | Koios Tiny is a dockered Cardano blockchain explorer API tool based on [Koios](https://koios.rest) and [Cardano-Db-Sync](https://github.com/input-output-hk/cardano-db-sync). With some custom RPCs added.
 
 ## Getting Started
 
@@ -31,12 +32,6 @@ docker compose up -d --build
 
 > Restoring from snapshot takes about 5 hours on epoch 413 with using a fast NVMe SSD (~1M IOPS). Also after restoring db-sync snapshot, it will take some time to run koios cron jobs, about 6 hours, so keep that in mind. 
 
-With HAProxy
-
-``` console
-docker compose --profile haproxy up -d --build
-```
-
 </details>
   
 <details>
@@ -46,12 +41,6 @@ Default
 
 ``` console
 NETWORK=preprod docker compose up -d --build
-```
-
-With HAProxy
-
-``` console
-NETWORK=preprod docker compose --profile haproxy up -d --build
 ```
 
 Advanced usage (ports mapping, containers name change)
@@ -74,12 +63,6 @@ Default
 
 ``` console
 NETWORK=preview docker compose up -d --build
-```
-
-With HAProxy
-
-``` console
-NETWORK=preview docker compose --profile haproxy up -d --build
 ```
 
 Advanced usage (ports mapping, containers name change)
