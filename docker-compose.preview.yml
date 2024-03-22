@@ -49,7 +49,7 @@ services:
     ]
     environment:
       - EKG=Y
-      - RESTORE_SNAPSHOT=${RESTORE_SNAPSHOT_preview:-}
+      - RESTORE_SNAPSHOT=${RESTORE_SNAPSHOT_PREVIEW:-}
       - RESTORE_RECREATE_DB=N
       - POSTGRES_HOST=postgres-preview
       - POSTGRES_PORT=5432
