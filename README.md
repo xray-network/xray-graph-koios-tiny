@@ -6,6 +6,7 @@
 > XRAY | Graph | Koios Tiny is a dockered Cardano blockchain explorer API tool based on [Koios](https://koios.rest) and [Cardano-Db-Sync](https://github.com/input-output-hk/cardano-db-sync). With some custom RPCs added.
 
 ## Getting Started
+### Prepare Installation
 
 ``` console
 git clone \
@@ -18,16 +19,16 @@ cp .env.example .env
 ```
   
 #### Build and Run via Docker Compose
-  
+
+> You can combine profiles to run multiple networks on the same machine: `docker compose --profile mainnet --profile preprod --profile preview up -d`
+
 <details open>
   <summary><b>MAINNET</b></summary>
 
-Default
-
-Get the most recent weekly snapshot link [here](https://snapshots.koios.rest/db-sync-13.1-mainnet/) (with db-sync started with `--consumed-tx-out` flag) or [here](https://update-cardano-mainnet.iohk.io/cardano-db-sync/index.html#13.1/) (without flag, takes a lot longer to restore), and set it as `RESTORE_SNAPSHOT` below, or omit if you wish to sync from genesis.
+Get the most recent weekly snapshot link [here](https://snapshots.koios.rest/db-sync-13.1-mainnet/) (with db-sync started with `--consumed-tx-out` flag) or [here](https://update-cardano-mainnet.iohk.io/cardano-db-sync/index.html#13.1/) (without flag, takes a lot longer to restore), and set it as `RESTORE_SNAPSHOT_MAINNET` below, or omit if you wish to sync from genesis.
 ``` console
-RESTORE_SNAPSHOT=https://snapshots.koios.rest/db-sync-13.1-mainnet/db-sync-snapshot-schema-13.1-block-9684674-x86_64.tgz \
-docker compose up -d --build
+RESTORE_SNAPSHOT_MAINNET=https://snapshots.koios.rest/db-sync-13.1-mainnet/db-sync-snapshot-schema-13.1-block-9684674-x86_64.tgz \
+docker compose --profile mainnet up -d --build
 ```
 
 > Restoring from snapshot takes about 5 hours on epoch 413 with using a fast NVMe SSD (~1M IOPS). Also after restoring db-sync snapshot, it will take some time to run koios cron jobs, about 6 hours, so keep that in mind. 
@@ -37,21 +38,8 @@ docker compose up -d --build
 <details>
   <summary><b>PREPROD</b></summary>
 
-Default
-
 ``` console
-NETWORK=preprod docker compose up -d --build
-```
-
-Advanced usage (ports mapping, containers name change)
-
-``` console
-NETWORK=preprod \
-CARDANO_NODE_PORT=3001 \
-KOIOS_TINY_PORT=8051 \
-OGMIOS_PORT=1338 \
-POSTGRES_PORT=5433 \
-docker compose -p preprod up -d --build
+docker compose --profile preprod up -d --build
 ```
 
 </details>
@@ -59,21 +47,8 @@ docker compose -p preprod up -d --build
 <details>
   <summary><b>PREVIEW</b></summary>
 
-Default
-
 ``` console
-NETWORK=preview docker compose up -d --build
-```
-
-Advanced usage (ports mapping, containers name change)
-
-``` console
-NETWORK=preview \
-CARDANO_NODE_PORT=3002 \
-KOIOS_TINY_PORT=8052 \
-OGMIOS_PORT=1339 \
-POSTGRES_PORT=5434 \
-docker compose -p preview up -d --build
+docker compose --profile preview up -d --build
 ```
 
 </details>
