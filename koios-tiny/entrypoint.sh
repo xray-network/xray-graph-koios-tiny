@@ -2,6 +2,9 @@
 
 WORKDIR=$HOME
 PGDATABASE=${POSTGRES_DB}
+PGHOST=${POSTGRES_HOST}
+PGPORT=${POSTGRES_PORT}
+PGRST_DB_URI=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
 
 SHELLEY_GENESIS_JSON=${WORKDIR}/cardano-configurations/network/${NETWORK}/genesis/shelley.json
 ALONZO_GENESIS_JSON=${WORKDIR}/cardano-configurations/network/${NETWORK}/genesis/alonzo.json
