@@ -18,7 +18,7 @@ git clone \
 cp .env.example .env
 ```
   
-#### Build and Run via Docker Compose
+### Build and Run via Docker Compose
 
 > You can combine profiles to run multiple networks on the same machine: `docker compose --profile mainnet --profile preprod --profile preview up -d`
 
