@@ -5,7 +5,6 @@ services:
     env_file: ./.env
     environment:
       - POSTGRES_LOGGING=true
-      - POSTGRES_DB=cexplorer
     ports:
       - 127.0.0.1:5433:5432
     shm_size: '2gb'
@@ -53,7 +52,6 @@ services:
       - RESTORE_RECREATE_DB=N
       - POSTGRES_HOST=postgres-preprod
       - POSTGRES_PORT=5432
-      - POSTGRES_DB=cexplorer
     depends_on:
       - cardano-node-ogmios-preprod
       - postgres-preprod
@@ -81,7 +79,6 @@ services:
       - NETWORK=preprod
       - POSTGRES_HOST=postgres-preprod
       - POSTGRES_PORT=5432
-      - POSTGRES_DB=cexplorer
     ports:
       - 127.0.0.1:8051:8050
     depends_on:
