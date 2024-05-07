@@ -38,7 +38,7 @@ services:
     restart: on-failure
 
   cardano-db-sync-preprod:
-    image: inputoutput/cardano-db-sync:13.1.1.3
+    image: ghcr.io/intersectmbo/cardano-db-sync:13.1.1.3
     profiles: ["preprod"]
     env_file: ./.env
     command: [
@@ -79,6 +79,9 @@ services:
       - NETWORK=preprod
       - POSTGRES_HOST=postgres-preprod
       - POSTGRES_PORT=5432
+      - PGHOST=postgres-preprod
+      - PGPORT=5432
+      - PGRST_DB_URI=postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres-preprod:5432/$POSTGRES_DB
     ports:
       - 127.0.0.1:8051:8050
     depends_on:
