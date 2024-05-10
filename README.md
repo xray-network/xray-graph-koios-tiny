@@ -1,9 +1,9 @@
 <a href="https://discord.gg/WhZmm46APN"><img alt="Discord" src="https://img.shields.io/discord/852538978946383893?style=for-the-badge&logo=discord&label=Discord&labelColor=%231940ED&color=%233FCB9B"></a>
 
-# XRAY | Graph | Koios Tiny — Cardano Explorer API
+# XRAY/Graph/KoiosTiny — Cardano Explorer API
 
 > [!NOTE]
-> XRAY | Graph | Koios Tiny is a dockered Cardano blockchain explorer API tool based on [Koios](https://koios.rest) and [Cardano-Db-Sync](https://github.com/input-output-hk/cardano-db-sync). With some custom RPCs added.
+> XRAY/Graph/KoiosTiny is a dockered Cardano blockchain explorer API tool based on [Koios](https://koios.rest) and [Cardano-Db-Sync](https://github.com/input-output-hk/cardano-db-sync). With some custom RPCs added.
 
 ## Getting Started
 ### Prepare Installation
@@ -20,18 +20,18 @@ cp .env.example .env
   
 ### Build and Run via Docker Compose
 
-> You can combine profiles to run multiple networks on the same machine: `docker compose --profile mainnet --profile preprod --profile preview up -d`
+You can combine profiles to run multiple networks on the same machine: `docker compose --profile mainnet --profile preprod --profile preview up -d`
 
 <details open>
   <summary><b>MAINNET</b></summary>
 
-Get the most recent weekly snapshot link [here](https://snapshots.koios.rest/db-sync-13.1-mainnet/) (with db-sync started with `--consumed-tx-out` flag) or [here](https://update-cardano-mainnet.iohk.io/cardano-db-sync/index.html#13.1/) (without flag, takes a lot longer to restore), and set it as `RESTORE_SNAPSHOT_MAINNET` below, or omit if you wish to sync from genesis.
+
 ``` console
 RESTORE_SNAPSHOT_MAINNET=https://snapshots.koios.rest/db-sync-13.1-mainnet/db-sync-snapshot-schema-13.1-block-9684674-x86_64.tgz \
 docker compose --profile mainnet up -d --build
 ```
 
-> Restoring from snapshot takes about 5 hours on epoch 413 with using a fast NVMe SSD (~1M IOPS). Also after restoring db-sync snapshot, it will take some time to run koios cron jobs, about 6 hours, so keep that in mind. 
+> Get the most recent snapshot link [here](https://snapshots.koios.rest/dbsync-13.2-mainnet/) (with db-sync started with `--consumed-tx-out` flag) or [here](https://update-cardano-mainnet.iohk.io/cardano-db-sync/index.html#13.1/) (without flag, takes a lot longer to restore), and set it as `RESTORE_SNAPSHOT_MAINNET` below, or omit if you wish to sync from genesis. Restoring from snapshot takes >6 hours and full init of Koios cron jobs >3 hours, so keep that in mind. 
 
 </details>
   
@@ -57,12 +57,11 @@ docker compose --profile preview up -d --build
 ## Endpoints List
   
 * Koios — https://api.koios.rest/
-* Ogmios — https://ogmios.dev/api/
 
 Differences with the original Koios:
 
-* `/submittx` endpoint: not available, use XRAY | Graph | Turbo Tx Send API
-* `/ogmios` endpoint: not available, use XRAY | Graph | Ogmios API
+* `/submittx` endpoint: send TX in CBOR format (plain/text string)
+* `/ogmios` endpoint: not available, use XRAY/Graph/Ogmios instead
 
 ## API Status Check
   
@@ -96,7 +95,7 @@ Place the `.sql` files in the `koios-tiny/extra-rpc` folder to register with Pos
 
 Place the .sh files in `koios-tiny/extra-cron-jobs` and edit the `koios-tiny/cron-schedule`. Then rebuild the `koios-tiny` container.
 
-Rebuild: `docker compose up -d --build --force-recreate koios-tiny`.
+Rebuild: `docker compose up -d --build --force-recreate koios-tiny-{network}`.
   
 </details>
 
