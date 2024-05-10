@@ -1,7 +1,7 @@
 #############################################################################################
 ### CARDANO-DB-SYNC ###
 
-FROM ghcr.io/intersectmbo/cardano-db-sync:13.2.0.2 as cardano-db-sync-original
+FROM ghcr.io/intersectmbo/cardano-db-sync:13.2.0.2-docker as cardano-db-sync-original
 
 # Second stage: Start from a minimal Debian or Alpine base
 FROM debian:buster-slim as cardano-db-sync
