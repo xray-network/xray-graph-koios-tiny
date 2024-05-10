@@ -1,9 +1,9 @@
 <a href="https://discord.gg/WhZmm46APN"><img alt="Discord" src="https://img.shields.io/discord/852538978946383893?style=for-the-badge&logo=discord&label=Discord&labelColor=%231940ED&color=%233FCB9B"></a>
 
-# XRAY/Graph/KoiosTiny — Cardano Explorer API
+# XRAY/Graph Koios Tiny — Cardano Explorer API
 
 > [!NOTE]
-> XRAY/Graph/KoiosTiny is a dockered Cardano blockchain explorer API tool based on [Koios](https://koios.rest) and [Cardano-Db-Sync](https://github.com/input-output-hk/cardano-db-sync). With some custom RPCs added.
+> XRAY/Graph Koios Tiny is a dockered Cardano blockchain explorer API tool based on [Koios](https://koios.rest) and [Cardano-Db-Sync](https://github.com/input-output-hk/cardano-db-sync). With some custom RPCs added.
 
 ## Getting Started
 ### Prepare Installation
@@ -60,7 +60,7 @@ docker compose --profile preview up -d --build
 
 Differences with the original Koios:
 
-* `/submittx` endpoint: send TX in CBOR format (plain/text string)
+* `/submittx` endpoint: send TX in CBOR format (text/plain string)
 * `/ogmios` endpoint: not available, use XRAY/Graph/Ogmios instead
 
 ## API Status Check
@@ -91,9 +91,9 @@ Use https://pgtune.leopard.in.ua/ to tune the database settings
 <details>
   <summary>Koios Custom RPCs & Cron Tasks</summary>
 
-Place the `.sql` files in the `koios-tiny/extra-rpc` folder to register with Postgrest. Then rebuild the `koios-tiny` container. Read more at https://postgrest.org/en/stable/references/api.html
+Place the `.sql` files in the `koios-tiny/extra-rpc` folder to register with Postgrest. Then rebuild the `koios-tiny-{network}` container. Read more at https://postgrest.org/en/stable/references/api.html
 
-Place the .sh files in `koios-tiny/extra-cron-jobs` and edit the `koios-tiny/cron-schedule`. Then rebuild the `koios-tiny` container.
+Place the .sh files in `koios-tiny/extra-cron-jobs` and edit the `koios-tiny/cron-schedule`. Then rebuild the `koios-tiny-{network}` container.
 
 Rebuild: `docker compose up -d --build --force-recreate koios-tiny-{network}`.
   
