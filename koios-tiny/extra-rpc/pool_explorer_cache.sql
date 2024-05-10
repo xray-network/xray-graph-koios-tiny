@@ -142,20 +142,23 @@ BEGIN
         CASE WHEN api.pool_status = 'retired'
           THEN NULL
         ELSE
-          SUM(
-            CASE WHEN amount::numeric >= 0
-              THEN amount::numeric
+          SUM (
+            CASE WHEN total_balance >= 0
+              THEN total_balance
               ELSE 0
             END
           )::lovelace
         END AS stake,
-        COUNT(stake_address) AS delegators,
+        COUNT (stake_address) AS delegators,
         CASE WHEN api.pool_status = 'retired'
           THEN NULL
         ELSE
-          SUM(CASE WHEN pool_delegs.stake_address = ANY(api.owners) THEN amount::numeric ELSE 0 END)::lovelace
+          SUM (CASE WHEN sdc.stake_address = ANY (api.owners) THEN total_balance ELSE 0 END)::lovelace
         END AS pledge
-      FROM grest.pool_delegators(api.pool_id_bech32) AS pool_delegs
+      FROM
+        grest.stake_distribution_cache AS sdc
+      WHERE
+        sdc.pool_id = api.pool_id_bech32
     ) live ON TRUE
 
     LEFT JOIN LATERAL(
