@@ -1,4 +1,32 @@
 #############################################################################################
+### CARDANO-DB-SYNC ###
+
+FROM ghcr.io/intersectmbo/cardano-db-sync:13.2.0.2 as cardano-db-sync-original
+
+# Second stage: Start from a minimal Debian or Alpine base
+FROM debian:buster-slim as cardano-db-sync
+
+# Copy everything from the distroless image
+COPY --from=cardano-db-sync-original / /
+
+# Install necessary packages for adding repositories
+RUN apt-get update && apt-get install -y wget gnupg
+
+# Add PostgreSQL's official repo
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+
+# Import the repository signing key
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+
+# Update apt and install PostgreSQL client
+RUN apt-get update && apt-get install -y postgresql-client-16
+
+STOPSIGNAL SIGINT
+
+ENTRYPOINT ["/bin/entrypoint"]
+
+
+#############################################################################################
 ### KOIOS-TINY ###
 
 FROM alpine:latest as koios-tiny
@@ -39,3 +67,16 @@ USER postgres
 EXPOSE 8050/tcp
 ENTRYPOINT ["./entrypoint.sh"]
 
+
+#############################################################################################
+### SUBMITTX ###
+
+FROM node:20 as submittx
+
+WORKDIR /usr/src/app
+
+COPY submittx .
+RUN yarn install
+
+EXPOSE 8700/tcp
+CMD [ "node", "index.js" ]

@@ -58,12 +58,12 @@ BEGIN
       _pool_meta AS (
         SELECT DISTINCT ON (pic.pool_id_bech32)
           pool_id_bech32,
-          pod.ticker_name,
-          pod.json
+          ocpd.ticker_name,
+          ocpd.json
         FROM
           grest.pool_info_cache AS pic
-          LEFT JOIN public.pool_offline_data AS pod ON pod.pmr_id = pic.meta_id
-        WHERE pod.ticker_name IS NOT NULL
+          LEFT JOIN public.off_chain_pool_data AS ocpd ON ocpd.pmr_id = pic.meta_id
+        WHERE ocpd.ticker_name IS NOT NULL
         ORDER BY
           pic.pool_id_bech32,
           pic.tx_id DESC

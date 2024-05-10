@@ -22,7 +22,7 @@ services:
         max-file: "10"
 
   cardano-node-ogmios-mainnet:
-    image: cardanosolutions/cardano-node-ogmios:v6.1.0_8.7.3-mainnet
+    image: cardanosolutions/cardano-node-ogmios:v6.3.0_8.10.1-pre-mainnet
     profiles: ["mainnet"]
     logging:
       driver: "json-file"
@@ -38,13 +38,16 @@ services:
     restart: on-failure
 
   cardano-db-sync-mainnet:
-    image: ghcr.io/intersectmbo/cardano-db-sync:13.1.1.3
+#    image: ghcr.io/intersectmbo/cardano-db-sync:13.2.0.2
     profiles: ["mainnet"]
+    build:
+      context: .
+      target: cardano-db-sync
     env_file: ./.env
     command: [
-      "--config", "/config-db-sync/config.json",
+      "--config", "config/cardano-db-sync/config.json",
       "--socket-path", "/node-ipc/node.socket",
-      "--consumed-tx-out"
+      "--consumed-tx-out",
     ]
     environment:
       - EKG=Y
@@ -56,11 +59,9 @@ services:
       - cardano-node-ogmios-mainnet
       - postgres-mainnet
     volumes:
-      - ./config/cardano-db-sync/mainnet:/config-db-sync
       - ./config/cardano-configurations/network/mainnet:/config
       - node-ipc-mainnet:/node-ipc
       - db-sync-data-mainnet:/var/lib/cexplorer
-      - db-sync-logs-mainnet:/db-sync-logs
     restart: on-failure
     stop_signal: SIGINT
     logging:
@@ -79,15 +80,32 @@ services:
       - NETWORK=mainnet
       - POSTGRES_HOST=postgres-mainnet
       - POSTGRES_PORT=5432
-      - PGHOST=postgres-preview
+      - PGHOST=postgres-mainnet
       - PGPORT=5432
-      - PGRST_DB_URI=postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres-preview:5432/$POSTGRES_DB
+      - PGRST_DB_URI=postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres-mainnet:5432/$POSTGRES_DB
     ports:
       - 127.0.0.1:8050:8050
     depends_on:
       - postgres-mainnet
-    volumes:
-      - db-sync-logs-mainnet:/home/logs
+    restart: on-failure
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  submittx-mainnet:
+    profiles: ["mainnet"]
+    build:
+      context: .
+      target: submittx
+    environment:
+      - OGMIOS_HOST=cardano-node-ogmios-mainnet
+      - OGMIOS_PORT=1337
+    ports:
+      - 127.0.0.1:8700:8700
+    depends_on:
+      - cardano-node-ogmios-mainnet
     restart: on-failure
     logging:
       driver: "json-file"
@@ -96,7 +114,6 @@ services:
         max-file: "10"
 
 volumes:
-  db-sync-logs-mainnet:
   db-sync-data-mainnet:
   node-db-mainnet:
   node-ipc-mainnet:
