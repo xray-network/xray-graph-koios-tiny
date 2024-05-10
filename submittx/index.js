@@ -31,8 +31,9 @@ router.post("/", async (req, res) => {
         },
       }),
     })
+
     const result = await response.json()
-    res.send(result)
+    res.status(response.status).send(result)
   }
   catch (error) {
     console.log("Submittx ::", new Date().toISOString(), "::", JSON.stringify(error))
