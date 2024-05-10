@@ -28,6 +28,14 @@ DECLARE
   _epoch_no bigint;
   _saturation_limit bigint;
 BEGIN
+  IF (
+    SELECT COUNT(pid) > 1
+    FROM pg_stat_activity
+    WHERE state = 'active' AND query ILIKE '%grest.pool_explorer_cache%'
+      AND datname = (SELECT current_database())
+    ) THEN
+      RAISE EXCEPTION 'Previous pool_explorer_cache query still running but should have completed! Exiting...';
+  END IF;
 
   SELECT MAX(epoch.no) INTO _epoch_no FROM public.epoch;
   SELECT FLOOR(supply::bigint / (
@@ -55,7 +63,7 @@ BEGIN
     ros_history
   )
   WITH
-    _pool_list AS (
+    _all_pool_info AS (
       SELECT DISTINCT ON (pic.pool_id_bech32)
         *
       FROM
@@ -64,10 +72,10 @@ BEGIN
         pic.pool_id_bech32,
         pic.tx_id DESC
     )
-  SELECT DISTINCT ON (pl.pool_id_bech32)
-    pl.pool_hash_id,
-    pl.pool_id_bech32,
-    pl.pool_id_hex,
+  SELECT DISTINCT ON (api.pool_id_bech32)
+    api.pool_hash_id,
+    api.pool_id_bech32,
+    api.pool_id_hex,
     COALESCE(block_data.cnt, 0),
     COALESCE(block_data_current.cnt, 0),
     COALESCE(active_stake.as_sum, 0)::lovelace,
@@ -81,7 +89,7 @@ BEGIN
     COALESCE(avg_90_ros.ros, 0)::numeric,
     COALESCE(ros_history.history, JSONB_BUILD_ARRAY())::jsonb
   FROM
-    _pool_list AS pl
+    _all_pool_info AS api
 
     LEFT JOIN LATERAL (
       SELECT
@@ -91,7 +99,7 @@ BEGIN
       INNER JOIN
         public.slot_leader AS sl ON b.slot_leader_id = sl.id
       WHERE
-        sl.pool_hash_id = pl.pool_hash_id
+        sl.pool_hash_id = api.pool_hash_id
       LIMIT 1
     ) block_data ON TRUE
 
@@ -103,7 +111,7 @@ BEGIN
       INNER JOIN
         public.slot_leader AS sl ON b.slot_leader_id = sl.id
       WHERE
-        sl.pool_hash_id = pl.pool_hash_id
+        sl.pool_hash_id = api.pool_hash_id
         AND
         b.epoch_no = _epoch_no
       LIMIT 1
@@ -115,7 +123,7 @@ BEGIN
       FROM
         grest.pool_active_stake_cache AS pasc
       WHERE
-        pasc.pool_id = pl.pool_id_bech32
+        pasc.pool_id = api.pool_id_bech32
         AND
         pasc.epoch_no = _epoch_no
     ) active_stake ON TRUE
@@ -131,26 +139,23 @@ BEGIN
 
     LEFT JOIN LATERAL(
       SELECT
-        CASE WHEN pl.pool_status = 'retired'
+        CASE WHEN api.pool_status = 'retired'
           THEN NULL
         ELSE
-          SUM (
-            CASE WHEN total_balance >= 0
-              THEN total_balance
+          SUM(
+            CASE WHEN amount::numeric >= 0
+              THEN amount::numeric
               ELSE 0
             END
           )::lovelace
         END AS stake,
-        COUNT (stake_address) AS delegators,
-        CASE WHEN pl.pool_status = 'retired'
+        COUNT(stake_address) AS delegators,
+        CASE WHEN api.pool_status = 'retired'
           THEN NULL
         ELSE
-          SUM (CASE WHEN sdc.stake_address = ANY (pl.owners) THEN total_balance ELSE 0 END)::lovelace
+          SUM(CASE WHEN pool_delegs.stake_address = ANY(api.owners) THEN amount::numeric ELSE 0 END)::lovelace
         END AS pledge
-      FROM
-        grest.stake_distribution_cache AS sdc
-      WHERE
-        sdc.pool_id = pl.pool_id_bech32
+      FROM grest.pool_delegators(api.pool_id_bech32) AS pool_delegs
     ) live ON TRUE
 
     LEFT JOIN LATERAL(
@@ -159,7 +164,7 @@ BEGIN
       FROM
         grest.pool_history_cache AS phc
       WHERE
-        phc.pool_id = pl.pool_id_bech32
+        phc.pool_id = api.pool_id_bech32
         AND
         phc.epoch_no = _epoch_no - 2
     ) prev_ros ON TRUE
@@ -170,7 +175,7 @@ BEGIN
       FROM
         grest.pool_history_cache AS phc
       WHERE
-        phc.pool_id = pl.pool_id_bech32
+        phc.pool_id = api.pool_id_bech32
         AND
         phc.epoch_no BETWEEN _epoch_no - 6 AND _epoch_no - 2
     ) avg_30_ros ON TRUE
@@ -181,7 +186,7 @@ BEGIN
       FROM
         grest.pool_history_cache AS phc
       WHERE
-        phc.pool_id = pl.pool_id_bech32
+        phc.pool_id = api.pool_id_bech32
         AND
         phc.epoch_no BETWEEN _epoch_no - 18 AND _epoch_no - 2
     ) avg_90_ros ON TRUE
@@ -197,13 +202,13 @@ BEGIN
       FROM
         grest.pool_history_cache AS phc
       WHERE
-        phc.pool_id = pl.pool_id_bech32
+        phc.pool_id = api.pool_id_bech32
         AND
         phc.epoch_no BETWEEN _epoch_no - 8 AND _epoch_no - 2
     ) ros_history ON TRUE
 
   WHERE
-    pl.pool_status != 'retired'
+    api.pool_status != 'retired'
 
   ON CONFLICT (pool_id_bech32)
   DO UPDATE SET

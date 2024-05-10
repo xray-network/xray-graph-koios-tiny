@@ -3,11 +3,16 @@ CREATE OR REPLACE FUNCTION grest.pool_explorer (_pool_bech32_ids text[])
   RETURNS TABLE (
     pool_id_bech32 character varying,
     pool_id_hex text,
+    active_epoch_no bigint,
+    vrf_key_hash text,
     margin double precision,
     fixed_cost text,
     pledge text,
     reward_addr character varying,
-    ticker_name text,
+    owners character varying [],
+    relays jsonb [],
+    meta_url character varying,
+    meta_hash text,
     meta_json jsonb,
     pool_status text,
     retiring_epoch word31type,
@@ -43,27 +48,11 @@ BEGIN
 
   RETURN QUERY (
     WITH
-      -- Get last pool update for each pool
-      _pool_list AS (
+      _all_pool_info AS (
         SELECT DISTINCT ON (pic.pool_id_bech32)
           *
-        FROM
-          grest.pool_info_cache AS pic
-        WHERE
-          pic.pool_id_bech32 = ANY(SELECT UNNEST(_pool_bech32_ids))
-        ORDER BY
-          pic.pool_id_bech32,
-          pic.tx_id DESC
-      ),
-      _pool_meta AS (
-        SELECT DISTINCT ON (pic.pool_id_bech32)
-          pool_id_bech32,
-          ocpd.ticker_name,
-          ocpd.json
-        FROM
-          grest.pool_info_cache AS pic
-          LEFT JOIN public.off_chain_pool_data AS ocpd ON ocpd.pmr_id = pic.meta_id
-        WHERE ocpd.ticker_name IS NOT NULL
+        FROM grest.pool_info_cache AS pic
+        WHERE pic.pool_id_bech32 = ANY(SELECT UNNEST(_pool_bech32_ids))
         ORDER BY
           pic.pool_id_bech32,
           pic.tx_id DESC
@@ -75,16 +64,21 @@ BEGIN
           grest.pool_explorer_cache AS ex
       )
     SELECT
-      pl.pool_id_bech32,
-      pl.pool_id_hex,
-      pl.margin,
-      pl.fixed_cost::text,
-      pl.pledge::text,
-      pl.reward_addr,
-      pm.ticker_name::text,
-      pm.json::jsonb,
-      pl.pool_status,
-      pl.retiring_epoch,
+      api.pool_id_bech32,
+      api.pool_id_hex,
+      api.active_epoch_no,
+      api.vrf_key_hash,
+      api.margin,
+      api.fixed_cost::text,
+      api.pledge::text,
+      api.reward_addr,
+      api.owners,
+      api.relays,
+      api.meta_url,
+      api.meta_hash,
+      offline_data.json,
+      api.pool_status,
+      api.retiring_epoch,
       COALESCE(ex.block_count, 0)::int8,
       COALESCE(ex.curr_epoch_block_count, 0)::int8,
       COALESCE(ex.active_stake, 0)::lovelace,
@@ -98,9 +92,16 @@ BEGIN
       COALESCE(ex.last_90d_avg_ros, 0)::numeric,
       COALESCE(ex.ros_history, JSONB_BUILD_ARRAY())::jsonb
     FROM
-      _pool_list AS pl
-      LEFT JOIN _pool_meta AS pm ON pl.pool_id_bech32 = pm.pool_id_bech32
-      LEFT JOIN _pool_explorer AS ex ON pl.pool_id_bech32 = ex.pool_id_bech32
+      _all_pool_info AS api
+      LEFT JOIN LATERAL (
+        SELECT ocpd.json
+        FROM public.off_chain_pool_data AS ocpd
+        WHERE ocpd.pool_id = api.pool_hash_id
+          AND ocpd.pmr_id = api.meta_id
+        ORDER BY ocpd.pmr_id DESC
+        LIMIT 1
+      ) AS offline_data ON TRUE
+      LEFT JOIN _pool_explorer AS ex ON api.pool_id_bech32 = ex.pool_id_bech32
    WHERE
       pool_status != 'retired'
 
@@ -109,5 +110,4 @@ BEGIN
 END;
 $$;
 
-COMMENT ON FUNCTION grest.pool_explorer(text[]) IS 'Return pool explorer live metrics (block count in current epoch, live stake, delegators count, etc...)';
-
+COMMENT ON FUNCTION grest.pool_explorer () IS 'Return pool explorer live metrics (block count in current epoch, live stake, delegators count, etc...)';
