@@ -22,7 +22,7 @@ services:
         max-file: "10"
 
   cardano-node-ogmios-preprod:
-    image: cardanosolutions/cardano-node-ogmios:v6.3.0_8.10.1-pre-preview
+    image: cardanosolutions/cardano-node-ogmios:v6.3.0_8.10.1-pre-preprod
     profiles: ["preprod"]
     logging:
       driver: "json-file"
