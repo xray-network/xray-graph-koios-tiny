@@ -76,7 +76,7 @@ curl 0.0.0.0:8050/rpc/blocks
   
 ## TypeScript Client
   
-We recommend to use `cardano-koios-client`. Visit [koios-tiny-client](https://github.com/xray-network/cardano-koios-client) repo for more information.
+We recommend to use `cardano-koios-client`. Visit [cardano-koios-client](https://github.com/xray-network/cardano-koios-client) repo for more information.
   
 ## Advanced Usage
  
