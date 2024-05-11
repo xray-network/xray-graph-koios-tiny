@@ -60,8 +60,8 @@ docker compose --profile preview up -d --build
 
 Differences with the original Koios:
 
-* `/submittx` endpoint: send TX in CBOR format (text/plain string)
-* `/ogmios` endpoint: not available, use XRAY/Graph/Ogmios instead
+* `/submittx` endpoint: send TX as CBOR string (content-type: application/cbor)
+* `/ogmios` endpoint: not available, use XRAY/Graph Ogmios instead
 
 ## API Status Check
   
