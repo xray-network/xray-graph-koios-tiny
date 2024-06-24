@@ -33,7 +33,7 @@ app.use((req, res, next) => {
   next()
 })
 
-router.post("/", async (req, res) => {
+router.post("submittx", async (req, res) => {
   const tx = req.body
   try {
 
@@ -63,7 +63,7 @@ router.post("/", async (req, res) => {
   }
 })
 
-app.use('/submittx', router)
+app.use('/', router)
 
 app.listen(PORT, HOST);
 console.log(`Running on http://${HOST}:${PORT}`)

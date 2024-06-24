@@ -18,7 +18,7 @@ RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" > /etc/
 # Import the repository signing key
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 
-# Update apt and install PostgreSQL client
+# Update apt and install PostgreSQL Client v16
 RUN apt-get update && apt-get install -y postgresql-client-16
 
 STOPSIGNAL SIGINT
@@ -69,13 +69,13 @@ ENTRYPOINT ["./entrypoint.sh"]
 
 
 #############################################################################################
-### SUBMITTX ###
+### OGMIOS-TINY ###
 
-FROM node:20 as submittx
+FROM node:20 as ogmios-tiny
 
 WORKDIR /usr/src/app
 
-COPY submittx .
+COPY ogmios-tiny .
 RUN yarn install
 
 EXPOSE 8700/tcp

@@ -93,6 +93,25 @@ services:
         max-size: "200k"
         max-file: "10"
 
+  ogmios-tiny-preprod:
+    profiles: ["preprod"]
+    build:
+      context: .
+      target: ogmios-tiny
+    environment:
+      - OGMIOS_HOST=cardano-node-ogmios-preprod
+      - OGMIOS_PORT=1337
+    ports:
+      - 127.0.0.1:8701:8700
+    depends_on:
+      - cardano-node-ogmios-preprod
+    restart: on-failure
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
 volumes:
   db-sync-data-preprod:
   node-db-preprod:
