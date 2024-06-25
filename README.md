@@ -53,9 +53,13 @@ docker compose --profile preview up -d --build
 </details>
 
 
-## Endpoints List
+## Documentation
   
-* Koios — https://api.koios.rest/
+* Koios (OpenAPI endpoints list) — [https://api.koios.rest](https://api.koios.rest)
+* Koios — [https://koios.rest](https://koios.rest)
+* Cardano-Db-Sync — [https://github.com/IntersectMBO/cardano-db-sync](https://github.com/IntersectMBO/cardano-db-sync)
+* Ogmios — [https://ogmios.dev](https://ogmios.dev)
+* Haproxy — [https://www.haproxy.org](https://www.haproxy.org)
 
 Differences with the original Koios:
 
