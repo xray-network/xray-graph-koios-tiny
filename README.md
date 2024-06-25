@@ -1,9 +1,8 @@
 <a href="https://discord.gg/WhZmm46APN"><img alt="Discord" src="https://img.shields.io/discord/852538978946383893?style=for-the-badge&logo=discord&label=Discord&labelColor=%231940ED&color=%233FCB9B"></a>
 
-# XRAY/Graph Koios Tiny — Cardano Explorer API
+# XRAY/Graph Koios — Dockerized Koios (Cardano-Db-Sync) stack
 
-> [!NOTE]
-> XRAY/Graph Koios Tiny is a dockered Cardano blockchain explorer API tool based on [Koios](https://koios.rest) and [Cardano-Db-Sync](https://github.com/input-output-hk/cardano-db-sync). With some custom RPCs added.
+XRAY/Graph Kupmios is a tool for fast and predictable deployment of [Haproxy](https://www.haproxy.org/) (TCP/HTTP Load Balancer), [Koios](https://koios.rest/) (Cardano-Db-Sync) stack in a docker environment. Used in the [XRAY/Graph](https://xray.app/) distributed Cardano API provider.
 
 ## Getting Started
 ### Prepare Installation
