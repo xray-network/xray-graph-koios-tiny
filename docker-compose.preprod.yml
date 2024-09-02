@@ -22,7 +22,7 @@ services:
         max-file: "10"
 
   cardano-node-ogmios-preprod:
-    image: cardanosolutions/cardano-node-ogmios:v6.4.0_8.9.3-preprod
+    image: cardanosolutions/cardano-node-ogmios:v6.6.1_9.1.0-preprod
     profiles: ["preprod"]
     logging:
       driver: "json-file"
@@ -45,7 +45,7 @@ services:
     profiles: ["preprod"]
     env_file: ./.env
     command: [
-      "--config", "config/cardano-db-sync/config.json",
+      "--config", "config/config.json",
       "--socket-path", "/node-ipc/node.socket",
       "--consumed-tx-out"
     ]
@@ -58,7 +58,8 @@ services:
       - cardano-node-ogmios-preprod
       - postgres-preprod
     volumes:
-      - ./config/cardano-configurations/network/preprod:/config
+      - ./config/cardano-configurations/network/preprod:/cardano-config
+      - ./config/cardano-db-sync/preprod:/config
       - node-ipc-preprod:/node-ipc
       - db-sync-data-preprod:/var/lib/cexplorer
     restart: on-failure
