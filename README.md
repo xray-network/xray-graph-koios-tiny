@@ -19,18 +19,24 @@ cp .env.example .env
   
 ### Build and Run via Docker Compose
 
-You can combine profiles to run multiple networks on the same machine: `docker compose --profile mainnet --profile preprod --profile preview up -d`
+> You can combine profiles to run multiple networks on the same machine: `docker compose --profile mainnet --profile preprod --profile preview up -d`
 
 <details open>
   <summary><b>MAINNET</b></summary>
 
-
+#### Clean Install
 ``` console
-RESTORE_SNAPSHOT_MAINNET=https://snapshots.koios.rest/db-sync-13.1-mainnet/db-sync-snapshot-schema-13.1-block-9684674-x86_64.tgz \
 docker compose --profile mainnet up -d --build
 ```
 
-> Get the most recent snapshot link [here](https://snapshots.koios.rest/dbsync-13.2-mainnet/) (with db-sync started with `--consumed-tx-out` flag) or [here](https://update-cardano-mainnet.iohk.io/cardano-db-sync/index.html#13.1/) (without flag, takes a lot longer to restore), and set it as `RESTORE_SNAPSHOT_MAINNET` below, or omit if you wish to sync from genesis. Restoring from snapshot takes >6 hours and full init of Koios cron jobs >3 hours, so keep that in mind. 
+#### Restore Snapshot
+You can find the latest `cardano-db-sync` snapshot (with the `consumed-tx-out` flag) in the latest Koios release description: https://github.com/cardano-community/koios-artifacts/releases/latest 
+
+``` console
+curl -O --output-dir ./snapshots https://share.koios.rest/api/public/dl/xFdZDfM4/dbsync/mainnet-dbsnap-epoch505-x86_64.tgz \
+RESTORE_SNAPSHOT_MAINNET=/snapshots/mainnet-dbsnap-epoch505-x86_64.tgz \
+docker compose --profile mainnet up -d --build
+```
 
 </details>
   
