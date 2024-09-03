@@ -58,6 +58,7 @@ services:
       - cardano-node-ogmios-preprod
       - postgres-preprod
     volumes:
+      - ./snapshots:/snapshots
       - ./config/cardano-configurations/network/preprod:/cardano-config
       - ./config/cardano-db-sync/preprod:/config
       - node-ipc-preprod:/node-ipc

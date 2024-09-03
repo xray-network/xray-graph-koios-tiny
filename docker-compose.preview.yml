@@ -58,6 +58,7 @@ services:
       - cardano-node-ogmios-preview
       - postgres-preview
     volumes:
+      - ./snapshots:/snapshots
       - ./config/cardano-configurations/network/preview:/cardano-config
       - ./config/cardano-db-sync/preview:/config
       - node-ipc-preview:/node-ipc

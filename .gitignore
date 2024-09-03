@@ -22,3 +22,5 @@ yarn-error.log
 # dotenv environment variable files
 .env*
 !.env.example
+snapshots/*
+!snapshots/.gitignore

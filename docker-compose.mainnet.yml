@@ -58,6 +58,7 @@ services:
       - cardano-node-ogmios-mainnet
       - postgres-mainnet
     volumes:
+      - ./snapshots:/snapshots
       - ./config/cardano-configurations/network/mainnet:/cardano-config
       - ./config/cardano-db-sync/mainnet:/config
       - node-ipc-mainnet:/node-ipc
