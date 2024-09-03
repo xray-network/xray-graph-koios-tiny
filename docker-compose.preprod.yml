@@ -46,8 +46,7 @@ services:
     env_file: ./.env
     command: [
       "--config", "config/config.json",
-      "--socket-path", "/node-ipc/node.socket",
-      "--consumed-tx-out"
+      "--socket-path", "/node-ipc/node.socket"
     ]
     environment:
       - EKG=Y
