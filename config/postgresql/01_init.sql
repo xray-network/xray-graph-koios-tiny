@@ -1,1 +1,2 @@
-CREATE ROLE authenticator;
+CREATE ROLE web_anon nologin;
+CREATE ROLE authenticator LOGIN;
