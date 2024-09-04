@@ -11,6 +11,7 @@ services:
     volumes:
       - ./config/postgresql/postgresql.testnet.conf:/etc/postgresql.conf
       - postgres-data-preview:/var/lib/postgresql/data
+      - ./config/postgresql/01_init.sql:/docker-entrypoint-initdb.d/01_init.sql
     command: [
       "-c", "config_file=/etc/postgresql.conf"
     ]

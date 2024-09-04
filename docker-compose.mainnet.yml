@@ -11,6 +11,7 @@ services:
     volumes:
       - ./config/postgresql/postgresql.conf:/etc/postgresql.conf
       - postgres-data-mainnet:/var/lib/postgresql/data
+      - ./config/postgresql/01_init.sql:/docker-entrypoint-initdb.d/01_init.sql
     command: [
       "-c", "config_file=/etc/postgresql.conf"
     ]
@@ -46,7 +47,7 @@ services:
     env_file: ./.env
     command: [
       "--config", "config/config.json",
-      "--socket-path", "/node-ipc/node.socket",
+      "--socket-path", "/node-ipc/node.socket"
     ]
     environment:
       - EKG=Y
