@@ -56,7 +56,11 @@ COPY koios-tiny/cron-schedule /var/spool/cron/crontabs/postgres
 # Adding permissions and setting the cron to run as the "postgres" user
 RUN chmod +x cron/*
 RUN chown -R postgres:postgres /home/postgres
-RUN chown -R postgres:postgres /etc/crontabs && \ 
+RUN chown -R postgres:postgres /etc/crontabs
+RUN mkdir -p /var/run && \
+    chown postgres:postgres /var/run && \
+    touch /var/run/crond.pid && \ 
+    chown postgres:postgres /var/run/crond.pid && \
     chown postgres:postgres /usr/sbin/crond && \
     setcap cap_setgid=ep /usr/sbin/crond
 
