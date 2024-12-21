@@ -4,7 +4,7 @@
 FROM ghcr.io/intersectmbo/cardano-db-sync:13.5.0.2 as cardano-db-sync-original
 
 # Second stage: Start from a minimal Debian or Alpine base
-FROM debian:buster-slim as cardano-db-sync
+FROM debian:bullseye-slim as cardano-db-sync
 
 # Copy everything from the distroless image
 COPY --from=cardano-db-sync-original / /
@@ -13,7 +13,7 @@ COPY --from=cardano-db-sync-original / /
 RUN apt-get update && apt-get install -y wget gnupg
 
 # Add PostgreSQL's official repo
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 
 # Import the repository signing key
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
