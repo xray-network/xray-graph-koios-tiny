@@ -1,4 +1,15 @@
 #############################################################################################
+### POSTGRES WITH PG_BECH32 ###
+
+FROM postgres:17.2-bookworm as postgres
+
+# Install PG_BECH32 extension
+COPY koios-tiny/pg_bech32_install.sh /root/
+RUN chmod +x /root/pg_bech32_install.sh
+RUN ./root/pg_bech32_install.sh
+
+
+#############################################################################################
 ### CARDANO-DB-SYNC ###
 
 FROM ghcr.io/intersectmbo/cardano-db-sync:13.6.0.4 as cardano-db-sync-original
@@ -19,7 +30,7 @@ RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" > /et
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 
 # Update apt and install PostgreSQL Client v16
-RUN apt-get update && apt-get install -y postgresql-client-16
+RUN apt-get update && apt-get install -y postgresql-client-17
 
 STOPSIGNAL SIGINT
 
@@ -47,7 +58,7 @@ COPY koios-tiny/entrypoint.sh .
 COPY config/cardano-configurations cardano-configurations
 
 COPY koios-tiny/koios-artifacts/files/grest/rpc rpc
-COPY koios-tiny/extra-rpc rpc
+COPY koios-tiny/extra-rpc rpc/extra-rpc
 
 COPY koios-tiny/koios-artifacts/files/grest/cron/jobs cron
 COPY koios-tiny/extra-cron-jobs cron

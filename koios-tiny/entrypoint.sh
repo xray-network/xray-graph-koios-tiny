@@ -135,7 +135,7 @@ deploy_rpcs() {
   for d in $RPC_SCRIPTS_DIR/*/; do
     if [[ $(basename $d) == 'db-scripts' ]] || [[ $(basename $d) == 'v0' ]]; then
       printf "\n\n    Skipping unnecessary subdir \"$(basename $d)\""
-    else 
+    else
       printf "\n\n    Execution pSQL from subdir \"$(basename $d)\""
       for f in $d*.sql; do
         deploy_rpc $f
@@ -143,8 +143,8 @@ deploy_rpcs() {
     fi
   done
 
-  printf "\n\n    Execution pSQL from subdir \"/\" (Extra RPCs)"
-  for f in ${RPC_SCRIPTS_DIR}/*.sql; do
+  printf "\n\n    Execution pSQL from subdir \"/extra-rpc\" (Extra RPCs)"
+  for f in ${RPC_SCRIPTS_DIR}/extra-rpc/*.sql; do
     deploy_rpc $f
   done
 }

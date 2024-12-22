@@ -9,5 +9,3 @@
 #*/10 * * * * /home/postgres/cron/populate-next-epoch-nonce.sh > /proc/1/fd/1 2>&1
 15 */2 * * * /home/postgres/cron/stake-distribution-update.sh > /proc/1/fd/1 2>&1
 
-# extra crons
-*/10 * * * * /home/postgres/cron/pool-explorer-cache-update.sh > /proc/1/fd/1 2>&1
