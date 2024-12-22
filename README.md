@@ -33,8 +33,8 @@ docker compose --profile mainnet up -d --build
 You can find the latest `cardano-db-sync` snapshot (with the `consumed-tx-out` flag) in the latest Koios release description: https://github.com/cardano-community/koios-artifacts/releases/latest 
 
 ``` console
-curl -O --output-dir ./snapshots https://share.koios.rest/api/public/dl/xFdZDfM4/dbsync/mainnet-dbsnap-epoch505-x86_64.tgz \
-RESTORE_SNAPSHOT_MAINNET=/snapshots/mainnet-dbsnap-epoch505-x86_64.tgz \
+curl -O --output-dir ./snapshots https://share.koios.rest/api/public/dl/xFdZDfM4/dbsync/mainnet-dbsyncsnap-latest.tgz \
+RESTORE_SNAPSHOT_MAINNET=/snapshots/mainnet-dbsyncsnap-latest.tgz \
 docker compose --profile mainnet up -d --build
 ```
 
@@ -57,6 +57,13 @@ docker compose --profile preview up -d --build
 ```
 
 </details>
+
+### Updating Git Submodules
+If you are upgrading a version, you may have to upgrade all the submodule dependencies
+
+``` console
+git submodule update --recursive --remote --merge
+```
 
 
 ## Documentation
