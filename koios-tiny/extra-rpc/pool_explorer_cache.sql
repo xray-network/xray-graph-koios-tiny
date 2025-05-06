@@ -70,7 +70,7 @@ BEGIN
     _all_pool_info AS (
       SELECT DISTINCT ON (pic.pool_hash_id)
         *,
-        b32_encode('pool', ph.hash_raw::text) AS pool_id_bech32,
+        cardano.bech32_encode('pool', ph.hash_raw) AS pool_id_bech32,
         ENCODE(ph.hash_raw::bytea, 'hex') as pool_id_hex
       FROM
         grest.pool_info_cache AS pic
@@ -168,7 +168,7 @@ BEGIN
           THEN NULL
         ELSE
           SUM(CASE
-            WHEN DECODE(b32_decode(pool_delegs.stake_address), 'hex') IN (
+            WHEN cardano.bech32_decode_data(pool_delegs.stake_address) IN (
                 SELECT sa.hash_raw
                 FROM public.pool_owner AS po
                 INNER JOIN public.stake_address AS sa ON sa.id = po.addr_id
