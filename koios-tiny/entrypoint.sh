@@ -160,6 +160,11 @@ deploy_query_updates() {
   printf "\n\nAll RPC functions successfully added to DBSync!"
 }
 
+setup_pg_cardano() {
+  printf "[Re]Installing pg_cardano extension..\n"
+  psql -qtAX -d ${PGDATABASE} -c "DROP EXTENSION IF EXISTS pg_cardano;CREATE EXTENSION pg_cardano;" >/dev/null
+}
+
 deploy_koios() {
   check_db_status
   if [[ $? -eq 1 ]]; then
@@ -167,6 +172,7 @@ deploy_koios() {
   fi
 
   reset_grest_schema
+  setup_pg_cardano
   setup_db_basics
   deploy_query_updates
 

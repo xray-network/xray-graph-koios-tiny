@@ -3,16 +3,20 @@
 
 FROM postgres:17.2-bookworm as postgres
 
-# Install PG_BECH32 extension
-COPY koios-tiny/pg_bech32_install.sh /root/
-RUN chmod +x /root/pg_bech32_install.sh
-RUN ./root/pg_bech32_install.sh
+# Install deps
+RUN apt-get update && apt-get install -y sudo curl postgresql-server-dev-all
+
+# Install PG_CARDANO extension
+RUN mkdir /root/tmp
+COPY koios-tiny/pg_cardano_install.sh /root/tmp
+RUN chmod +x /root/tmp/pg_cardano_install.sh
+RUN ./root/tmp/pg_cardano_install.sh
 
 
 #############################################################################################
 ### CARDANO-DB-SYNC ###
 
-FROM ghcr.io/intersectmbo/cardano-db-sync:13.6.0.4 as cardano-db-sync-original
+FROM ghcr.io/intersectmbo/cardano-db-sync:13.6.0.5 as cardano-db-sync-original
 
 # Second stage: Start from a minimal Debian or Alpine base
 FROM debian:bullseye-slim as cardano-db-sync

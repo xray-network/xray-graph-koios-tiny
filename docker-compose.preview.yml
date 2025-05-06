@@ -26,7 +26,7 @@ services:
         max-file: "10"
 
   cardano-node-ogmios-preview:
-    image: cardanosolutions/cardano-node-ogmios:v6.10.0_10.1.3-preview
+    image: cardanosolutions/cardano-node-ogmios:v6.11.2_10.1.4-preview
     profiles: ["preview"]
     logging:
       driver: "json-file"

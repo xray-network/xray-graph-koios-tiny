@@ -26,7 +26,7 @@ services:
         max-file: "10"
 
   cardano-node-ogmios-mainnet:
-    image: cardanosolutions/cardano-node-ogmios:v6.10.0_10.1.3-mainnet
+    image: cardanosolutions/cardano-node-ogmios:v6.11.2_10.1.4-mainnet
     profiles: ["mainnet"]
     logging:
       driver: "json-file"
