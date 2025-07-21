@@ -26,7 +26,6 @@ services:
         max-file: "10"
   cardano-node-ogmios:
     image: "cardanosolutions/cardano-node-ogmios:v6.13.0_10.1.4-${NETWORK}"
-    env_file: ./.env
     logging:
       driver: json-file
       options:
