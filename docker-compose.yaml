@@ -1,19 +1,19 @@
 services:
-  postgres-mainnet:
-#    image: postgres:16.1-alpine
-    profiles: ["mainnet"]
+  postgres:
     build:
       context: .
       target: postgres
-    env_file: ./.env
     environment:
       - POSTGRES_LOGGING=true
+      - POSTGRES_DB=${POSTGRES_DB:-cexplorer}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
-      - 127.0.0.1:5432:5432
+      - ${POSTGRES_PORT:-127.0.0.1:5432}:5432
     shm_size: '2gb'
     volumes:
-      - ./config/postgresql/postgresql.conf:/etc/postgresql.conf
-      - postgres-data-mainnet:/var/lib/postgresql/data
+      - ./config/postgresql/postgresql.${NETWORK}.conf:/etc/postgresql.conf
+      - postgres-data:/var/lib/postgresql/data
       - ./config/postgresql/01_init.sql:/docker-entrypoint-initdb.d/01_init.sql
     command: [
       "-c", "config_file=/etc/postgresql.conf"
@@ -25,48 +25,47 @@ services:
         max-size: "200k"
         max-file: "10"
 
-  cardano-node-ogmios-mainnet:
-    image: cardanosolutions/cardano-node-ogmios:v6.11.2_10.1.4-mainnet
-    profiles: ["mainnet"]
+  cardano-node-ogmios:
+    image: cardanosolutions/cardano-node-ogmios:v6.13.0_10.1.4-${NETWORK}
     logging:
       driver: "json-file"
       options:
         max-size: "400k"
         max-file: "20"
     ports:
-      - 127.0.0.1:1337:1337
-      - 3000:3000
+      - ${OGMIOS_PORT:-127.0.0.1:1337}:1337
+      - ${CARDANO_PORT:-3000}:3000
     volumes:
-      - node-db-mainnet:/db
-      - node-ipc-mainnet:/ipc
+      - node-db:/db
+      - node-ipc:/ipc
     restart: on-failure
 
-  cardano-db-sync-mainnet:
-#    image: ghcr.io/intersectmbo/cardano-db-sync:13.2.0.2
-    profiles: ["mainnet"]
+  cardano-db-sync:
     build:
       context: .
       target: cardano-db-sync
-    env_file: ./.env
     command: [
       "--config", "config/config.json",
       "--socket-path", "/node-ipc/node.socket"
     ]
     environment:
       - EKG=Y
-      - RESTORE_SNAPSHOT=${RESTORE_SNAPSHOT_MAINNET:-}
+      - RESTORE_SNAPSHOT=${RESTORE_SNAPSHOT:-}
       - RESTORE_RECREATE_DB=N
-      - POSTGRES_HOST=postgres-mainnet
+      - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-cexplorer}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     depends_on:
-      - cardano-node-ogmios-mainnet
-      - postgres-mainnet
+      - cardano-node-ogmios
+      - postgres
     volumes:
       - ./snapshots:/snapshots
-      - ./config/cardano-configurations/network/mainnet:/cardano-config
-      - ./config/cardano-db-sync/mainnet:/config
-      - node-ipc-mainnet:/node-ipc
-      - db-sync-data-mainnet:/var/lib/cexplorer
+      - ./config/cardano-configurations/network/${NETWORK}:/cardano-config
+      - ./config/cardano-db-sync/${NETWORK}:/config
+      - node-ipc:/node-ipc
+      - db-sync-data:/var/lib/cexplorer
     restart: on-failure
     stop_signal: SIGINT
     logging:
@@ -75,23 +74,21 @@ services:
         max-size: "200k"
         max-file: "10"
 
-  koios-tiny-mainnet:
-    profiles: ["mainnet"]
+  koios-tiny:
     build:
       context: .
       target: koios-tiny
-    env_file: ./.env
     environment:
-      - NETWORK=mainnet
-      - POSTGRES_HOST=postgres-mainnet
+      - NETWORK=${NETWORK}
+      - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
-      - PGHOST=postgres-mainnet
+      - PGHOST=postgres
       - PGPORT=5432
-      - PGRST_DB_URI=postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres-mainnet:5432/$POSTGRES_DB
+      - PGRST_DB_URI=postgres://${POSTGRES_USER:-postgres}:$POSTGRES_PASSWORD@postgres:5432/${POSTGRES_DB:-cexplorer}
     ports:
-      - 127.0.0.1:8050:8050
+      - ${KOIOS_TINY_PORT:-127.0.0.1:8050}:8050
     depends_on:
-      - postgres-mainnet
+      - postgres
     restart: on-failure
     logging:
       driver: "json-file"
@@ -99,18 +96,17 @@ services:
         max-size: "200k"
         max-file: "10"
 
-  ogmios-tiny-mainnet:
-    profiles: ["mainnet"]
+  ogmios-tiny:
     build:
       context: .
       target: ogmios-tiny
     environment:
-      - OGMIOS_HOST=cardano-node-ogmios-mainnet
+      - OGMIOS_HOST=cardano-node-ogmios
       - OGMIOS_PORT=1337
     ports:
-      - 127.0.0.1:8700:8700
+      - ${OGMIOS_TINY_PORT:-127.0.0.1:8700}:8700
     depends_on:
-      - cardano-node-ogmios-mainnet
+      - cardano-node-ogmios
     restart: on-failure
     logging:
       driver: "json-file"
@@ -119,7 +115,7 @@ services:
         max-file: "10"
 
 volumes:
-  db-sync-data-mainnet:
-  node-db-mainnet:
-  node-ipc-mainnet:
-  postgres-data-mainnet:
+  db-sync-data:
+  node-db:
+  node-ipc:
+  postgres-data:
