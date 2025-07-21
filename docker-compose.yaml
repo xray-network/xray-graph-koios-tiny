@@ -4,98 +4,105 @@ services:
       context: .
       target: postgres
     environment:
-      - POSTGRES_LOGGING=true
-      - POSTGRES_DB=${POSTGRES_DB:-cexplorer}
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - "POSTGRES_LOGGING=true"
+      - "POSTGRES_DB=${POSTGRES_DB:-cexplorer}"
+      - "POSTGRES_USER=${POSTGRES_USER:-postgres}"
+      - "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
     ports:
-      - ${POSTGRES_PORT:-127.0.0.1:5432}:5432
-    shm_size: '2gb'
+      - "${POSTGRES_PORT:-127.0.0.1:5432}:5432"
+    shm_size: 2gb
     volumes:
-      - ./config/postgresql/postgresql.${NETWORK}.conf:/etc/postgresql.conf
-      - postgres-data:/var/lib/postgresql/data
-      - ./config/postgresql/01_init.sql:/docker-entrypoint-initdb.d/01_init.sql
-    command: [
-      "-c", "config_file=/etc/postgresql.conf"
-    ]
+      - "./config/postgresql/postgresql.${NETWORK}.conf:/etc/postgresql.conf"
+      - "postgres-data:/var/lib/postgresql/data"
+      - "./config/postgresql/01_init.sql:/docker-entrypoint-initdb.d/01_init.sql"
+    command:
+      - "-c"
+      - config_file=/etc/postgresql.conf
     restart: on-failure
     logging:
-      driver: "json-file"
+      driver: json-file
       options:
-        max-size: "200k"
+        max-size: 200k
         max-file: "10"
-
   cardano-node-ogmios:
-    image: cardanosolutions/cardano-node-ogmios:v6.13.0_10.1.4-${NETWORK}
+    image: "cardanosolutions/cardano-node-ogmios:v6.13.0_10.1.4-${NETWORK}"
     logging:
-      driver: "json-file"
+      driver: json-file
       options:
-        max-size: "400k"
+        max-size: 400k
         max-file: "20"
     ports:
-      - ${OGMIOS_PORT:-127.0.0.1:1337}:1337
-      - ${CARDANO_PORT:-3000}:3000
+      - "${OGMIOS_PORT:-127.0.0.1:1337}:1337"
+      - "${CARDANO_PORT:-3000}:3000"
     volumes:
-      - node-db:/db
-      - node-ipc:/ipc
+      - "node-db:/db"
+      - "node-ipc:/ipc"
     restart: on-failure
-
+    labels:
+      - traefik.enable=true
+      - "traefik.http.routers.cardano-node-ogmios.rule=Header(`Host-Resolver`,`ogmios/${NETWORK}`) && Header(`Bearer-Resolver`,`${BEARER_RESOLVER_TOKEN}`)"
+      - traefik.http.routers.cardano-node-ogmios.entrypoints=https
+      - traefik.http.routers.cardano-node-ogmios.tls=true
+      - traefik.http.routers.cardano-node-ogmios.service=cardano-node-ogmios
+      - traefik.http.services.cardano-node-ogmios.loadbalancer.server.port=1337
+    networks:
+      - default
+      - coolify
   cardano-db-sync:
     build:
       context: .
       target: cardano-db-sync
-    command: [
-      "--config", "config/config.json",
-      "--socket-path", "/node-ipc/node.socket"
-    ]
+    command:
+      - "--config"
+      - config/config.json
+      - "--socket-path"
+      - /node-ipc/node.socket
     environment:
       - EKG=Y
-      - RESTORE_SNAPSHOT=${RESTORE_SNAPSHOT:-}
+      - "RESTORE_SNAPSHOT=${RESTORE_SNAPSHOT:-}"
       - RESTORE_RECREATE_DB=N
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
-      - POSTGRES_DB=${POSTGRES_DB:-cexplorer}
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - "POSTGRES_DB=${POSTGRES_DB:-cexplorer}"
+      - "POSTGRES_USER=${POSTGRES_USER:-postgres}"
+      - "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
     depends_on:
       - cardano-node-ogmios
       - postgres
     volumes:
-      - ./snapshots:/snapshots
-      - ./config/cardano-configurations/network/${NETWORK}:/cardano-config
-      - ./config/cardano-db-sync/${NETWORK}:/config
-      - node-ipc:/node-ipc
-      - db-sync-data:/var/lib/cexplorer
+      - "./snapshots:/snapshots"
+      - "./config/cardano-configurations/network/${NETWORK}:/cardano-config"
+      - "./config/cardano-db-sync/${NETWORK}:/config"
+      - "node-ipc:/node-ipc"
+      - "db-sync-data:/var/lib/cexplorer"
     restart: on-failure
     stop_signal: SIGINT
     logging:
-      driver: "local"
+      driver: local
       options:
-        max-size: "200k"
+        max-size: 200k
         max-file: "10"
-
   koios-tiny:
     build:
       context: .
       target: koios-tiny
     environment:
-      - NETWORK=${NETWORK}
+      - "NETWORK=${NETWORK}"
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - PGHOST=postgres
       - PGPORT=5432
-      - PGRST_DB_URI=postgres://${POSTGRES_USER:-postgres}:$POSTGRES_PASSWORD@postgres:5432/${POSTGRES_DB:-cexplorer}
+      - "PGRST_DB_URI=postgres://${POSTGRES_USER:-postgres}:$POSTGRES_PASSWORD@postgres:5432/${POSTGRES_DB:-cexplorer}"
     ports:
-      - ${KOIOS_TINY_PORT:-127.0.0.1:8050}:8050
+      - "${KOIOS_TINY_PORT:-127.0.0.1:8050}:8050"
     depends_on:
       - postgres
     restart: on-failure
     logging:
-      driver: "json-file"
+      driver: json-file
       options:
-        max-size: "200k"
+        max-size: 200k
         max-file: "10"
-
   ogmios-tiny:
     build:
       context: .
@@ -104,18 +111,20 @@ services:
       - OGMIOS_HOST=cardano-node-ogmios
       - OGMIOS_PORT=1337
     ports:
-      - ${OGMIOS_TINY_PORT:-127.0.0.1:8700}:8700
+      - "${OGMIOS_TINY_PORT:-127.0.0.1:8700}:8700"
     depends_on:
       - cardano-node-ogmios
     restart: on-failure
     logging:
-      driver: "json-file"
+      driver: json-file
       options:
-        max-size: "200k"
+        max-size: 200k
         max-file: "10"
-
 volumes:
-  db-sync-data:
-  node-db:
-  node-ipc:
-  postgres-data:
+  db-sync-data: null
+  node-db: null
+  node-ipc: null
+  postgres-data: null
+networks:
+  coolify:
+    external: true
