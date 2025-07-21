@@ -40,11 +40,11 @@ services:
     restart: on-failure
     labels:
       - traefik.enable=true
-      - "traefik.http.routers.cardano-node-ogmios.rule=Header(`Host-Resolver`,`ogmios/${NETWORK}`) && Header(`Bearer-Resolver`,`${BEARER_RESOLVER_TOKEN}`)"
-      - traefik.http.routers.cardano-node-ogmios.entrypoints=https
-      - traefik.http.routers.cardano-node-ogmios.tls=true
-      - traefik.http.routers.cardano-node-ogmios.service=cardano-node-ogmios
-      - traefik.http.services.cardano-node-ogmios.loadbalancer.server.port=1337
+      - "traefik.http.routers.cardano-node-ogmios-${NETWORK}.rule=Header(`Host-Resolver`,`ogmios/${NETWORK}`) && Header(`Bearer-Resolver`,`${BEARER_RESOLVER_TOKEN}`)"
+      - "traefik.http.routers.cardano-node-ogmios-${NETWORK}.entrypoints=https"
+      - "traefik.http.routers.cardano-node-ogmios-${NETWORK}.tls=true"
+      - "traefik.http.routers.cardano-node-ogmios-${NETWORK}.service=cardano-node-ogmios-${NETWORK}"
+      - "traefik.http.services.cardano-node-ogmios-${NETWORK}.loadbalancer.server.port=1337"
     networks:
       - default
       - coolify
