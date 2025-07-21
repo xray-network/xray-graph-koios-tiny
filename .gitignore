@@ -20,7 +20,5 @@ yarn-error.log
 .yarn-integrity
 
 # dotenv environment variable files
-.env*
-!.env.example
 snapshots/*
 !snapshots/.gitkeep
