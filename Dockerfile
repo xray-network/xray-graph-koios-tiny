@@ -1,7 +1,7 @@
 #############################################################################################
 ### POSTGRES WITH PG_BECH32 ###
 
-FROM postgres:17.2-bookworm as postgres
+FROM postgres:17.2-bookworm AS postgres
 
 # Install deps
 RUN apt-get update && apt-get install -y sudo curl postgresql-server-dev-all
@@ -16,10 +16,10 @@ RUN ./root/tmp/pg_cardano_install.sh
 #############################################################################################
 ### CARDANO-DB-SYNC ###
 
-FROM ghcr.io/intersectmbo/cardano-db-sync:13.6.0.5 as cardano-db-sync-original
+FROM ghcr.io/intersectmbo/cardano-db-sync:13.6.0.5 AS cardano-db-sync-original
 
 # Second stage: Start from a minimal Debian or Alpine base
-FROM debian:bullseye-slim as cardano-db-sync
+FROM debian:bullseye-slim AS cardano-db-sync
 
 # Copy everything from the distroless image
 COPY --from=cardano-db-sync-original / /
@@ -44,7 +44,7 @@ ENTRYPOINT ["/bin/entrypoint"]
 #############################################################################################
 ### KOIOS-TINY ###
 
-FROM alpine:latest as koios-tiny
+FROM alpine:latest AS koios-tiny
 
 # Installing packages...
 RUN apk add --no-cache dcron libcap bash nano jq git postgresql-client
@@ -90,7 +90,7 @@ ENTRYPOINT ["./entrypoint.sh"]
 #############################################################################################
 ### OGMIOS-TINY ###
 
-FROM node:20 as ogmios-tiny
+FROM node:20 AS ogmios-tiny
 
 WORKDIR /usr/src/app
 

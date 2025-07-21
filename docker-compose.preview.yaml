@@ -1,0 +1,123 @@
+name: koios-tiny-preview
+
+services:
+  postgres:
+    build:
+      context: .
+      target: postgres
+    environment:
+      - POSTGRES_LOGGING=true
+      - POSTGRES_DB=cexplorer
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - ${POSTGRES_PORT:-127.0.0.1:5432}:5432
+    shm_size: '2gb'
+    volumes:
+      - ./config/postgresql/postgresql.preview.conf:/etc/postgresql.conf
+      - postgres-data:/var/lib/postgresql/data
+      - ./config/postgresql/01_init.sql:/docker-entrypoint-initdb.d/01_init.sql
+    command: [
+      "-c", "config_file=/etc/postgresql.conf"
+    ]
+    restart: on-failure
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  cardano-node-ogmios:
+    image: cardanosolutions/cardano-node-ogmios:v6.13.0_10.1.4-preview
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "400k"
+        max-file: "20"
+    ports:
+      - ${OGMIOS_PORT:-127.0.0.1:1339}:1337
+      - ${CARDANO_PORT:-3002}:3000
+    volumes:
+      - node-db:/db
+      - node-ipc:/ipc
+    restart: on-failure
+
+  cardano-db-sync:
+    build:
+      context: .
+      target: cardano-db-sync
+    command: [
+      "--config", "config/config.json",
+      "--socket-path", "/node-ipc/node.socket"
+    ]
+    environment:
+      - EKG=Y
+      - RESTORE_SNAPSHOT=${RESTORE_SNAPSHOT:-}
+      - RESTORE_RECREATE_DB=N
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=cexplorer
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      - cardano-node-ogmios
+      - postgres
+    volumes:
+      - ./snapshots:/snapshots
+      - ./config/cardano-configurations/network/preview:/cardano-config
+      - ./config/cardano-db-sync/preview:/config
+      - node-ipc:/node-ipc
+      - db-sync-data:/var/lib/cexplorer
+    restart: on-failure
+    stop_signal: SIGINT
+    logging:
+      driver: "local"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  koios-tiny:
+    build:
+      context: .
+      target: koios-tiny
+    environment:
+      - NETWORK=preview
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - PGHOST=postgres
+      - PGPORT=5432
+      - PGRST_DB_URI=postgres://postgres:$POSTGRES_PASSWORD@postgres:5432/cexplorer
+    ports:
+      - ${KOIOS_TINY_PORT:-127.0.0.1:8052}:8050
+    depends_on:
+      - postgres
+    restart: on-failure
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  ogmios-tiny:
+    build:
+      context: .
+      target: ogmios-tiny
+    environment:
+      - OGMIOS_HOST=cardano-node-ogmios
+      - OGMIOS_PORT=1337
+    ports:
+      - ${OGMIOS_TINY_PORT:-127.0.0.1:8702}:8700
+    depends_on:
+      - cardano-node-ogmios
+    restart: on-failure
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+volumes:
+  db-sync-data:
+  node-db:
+  node-ipc:
+  postgres-data:
