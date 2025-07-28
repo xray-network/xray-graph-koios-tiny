@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y sudo curl postgresql-server-dev-all
 
 # Install PG_CARDANO extension
 RUN mkdir /root/tmp
-COPY koios/pg_cardano_install.sh /root/tmp
+COPY config/postgresql/pg_cardano_install.sh /root/tmp
 RUN chmod +x /root/tmp/pg_cardano_install.sh
 RUN ./root/tmp/pg_cardano_install.sh
 
