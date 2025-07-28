@@ -2,5 +2,5 @@
 	path = config/cardano-configurations
 	url = https://github.com/input-output-hk/cardano-configurations.git
 [submodule "koios-artifacts"]
-	path = koios-tiny/koios-artifacts
-	url = https://github.com/cardano-community/koios-artifacts.git
+        path = koios/koios-artifacts
+        url = https://github.com/cardano-community/koios-artifacts.git

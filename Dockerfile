@@ -1,5 +1,5 @@
 #############################################################################################
-### POSTGRES WITH PG_BECH32 ###
+### POSTGRES WITH PG_CARDANO EXTENSION ###
 
 FROM postgres:17.2-bookworm AS postgres
 
@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y sudo curl postgresql-server-dev-all
 
 # Install PG_CARDANO extension
 RUN mkdir /root/tmp
-COPY koios-tiny/pg_cardano_install.sh /root/tmp
+COPY koios/pg_cardano_install.sh /root/tmp
 RUN chmod +x /root/tmp/pg_cardano_install.sh
 RUN ./root/tmp/pg_cardano_install.sh
 
@@ -16,7 +16,7 @@ RUN ./root/tmp/pg_cardano_install.sh
 #############################################################################################
 ### CARDANO-DB-SYNC ###
 
-FROM ghcr.io/intersectmbo/cardano-db-sync:13.6.0.5 AS cardano-db-sync-original
+FROM ghcr.io/intersectmbo/cardano-db-sync:13.6.0.4 AS cardano-db-sync-original
 
 # Second stage: Start from a minimal Debian or Alpine base
 FROM debian:bullseye-slim AS cardano-db-sync
@@ -42,9 +42,9 @@ ENTRYPOINT ["/bin/entrypoint"]
 
 
 #############################################################################################
-### KOIOS-TINY ###
+### KOIOS ###
 
-FROM alpine:latest AS koios-tiny
+FROM alpine:latest AS koios
 
 # Installing packages...
 RUN apk add --no-cache dcron libcap bash nano jq git postgresql-client
@@ -58,15 +58,15 @@ ENV \
 WORKDIR /home/postgres
 COPY --from=postgrest/postgrest /bin/postgrest /bin
 COPY config/postgrest/postgrest.conf .
-COPY koios-tiny/entrypoint.sh .
+COPY koios/entrypoint.sh .
 COPY config/cardano-configurations cardano-configurations
 
-COPY koios-tiny/koios-artifacts/files/grest/rpc rpc
-COPY koios-tiny/extra-rpc rpc/extra-rpc
+COPY koios/koios-artifacts/files/grest/rpc rpc
+COPY koios/extra-rpc rpc/extra-rpc
 
-COPY koios-tiny/koios-artifacts/files/grest/cron/jobs cron
-COPY koios-tiny/extra-cron-jobs cron
-COPY koios-tiny/cron-schedule /var/spool/cron/crontabs/postgres
+COPY koios/koios-artifacts/files/grest/cron/jobs cron
+COPY koios/extra-cron-jobs cron
+COPY koios/cron-schedule /var/spool/cron/crontabs/postgres
 
 # Adding permissions and setting the cron to run as the "postgres" user
 RUN chmod +x cron/*
@@ -88,13 +88,13 @@ ENTRYPOINT ["./entrypoint.sh"]
 
 
 #############################################################################################
-### OGMIOS-TINY ###
+### OGMIOS-PROXY ###
 
-FROM node:20 AS ogmios-tiny
+FROM node:20 AS ogmios-proxy
 
 WORKDIR /usr/src/app
 
-COPY ogmios-tiny .
+COPY ogmios-proxy .
 RUN yarn install
 
 EXPOSE 8700/tcp

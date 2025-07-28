@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 
 WORKDIR=$HOME
@@ -8,7 +7,6 @@ SHELLEY_GENESIS_JSON=${WORKDIR}/cardano-configurations/network/${NETWORK}/genesi
 ALONZO_GENESIS_JSON=${WORKDIR}/cardano-configurations/network/${NETWORK}/genesis/alonzo.json
 RPC_SCRIPTS_DIR=${WORKDIR}/rpc
 CRON_SCRIPTS_DIR=${WORKDIR}/cron
-CURL_TIMEOUT=10
 
 echo "${POSTGRES_HOST}:${POSTGRES_PORT}:${POSTGRES_DB}:${POSTGRES_USER}:${POSTGRES_PASSWORD}" > $PGPASSFILE
 chmod 0600 $PGPASSFILE
@@ -162,21 +160,6 @@ deploy_query_updates() {
   printf "\n\nAll RPC functions successfully added to DBSync!"
 }
 
-deploy_pgcardano_ext() {
-  printf "[Re]Installing pg_cardano extension..\n"
-  mkdir -p ~/tmp
-  pushd ~/tmp >/dev/null || err_exit
-  ARCH=$(uname -m)
-  pgcardano_asset_url="https://share.koios.rest/api/public/dl/xFdZDfM4/bin/pg_cardano_linux_${ARCH}_v1.0.5-p2.tar.gz"
-  if curl -sL -f -m ${CURL_TIMEOUT} -o pg_cardano.tar.gz "${pgcardano_asset_url}"; then
-    tar xf pg_cardano.tar.gz &>/dev/null && rm -f pg_cardano.tar.gz
-    pushd pg_cardano >/dev/null || err_exit
-    [[ -f install.sh ]] || err_exit "pg_cardano tar downloaded but install.sh script not found after attempting to extract package!"
-    ./install.sh >/dev/null 2>&1 || err_exit "pg_cardano: Execution of install.sh script failed!"
-  fi
-  psql -qtAX -d ${PGDATABASE} -c "DROP EXTENSION IF EXISTS pg_cardano;CREATE EXTENSION pg_cardano;" >/dev/null
-}
-
 deploy_koios() {
   check_db_status
   if [[ $? -eq 1 ]]; then
@@ -184,7 +167,6 @@ deploy_koios() {
   fi
 
   reset_grest_schema
-  deploy_pgcardano_ext
   setup_db_basics
   deploy_query_updates
 

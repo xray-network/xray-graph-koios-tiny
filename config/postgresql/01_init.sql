@@ -1,5 +1,5 @@
 CREATE ROLE web_anon nologin;
 CREATE ROLE authenticator LOGIN;
 CREATE ROLE koios;
-DROP EXTENSION IF EXISTS pg_bech32;
-CREATE EXTENSION pg_bech32;
+DROP EXTENSION IF EXISTS pg_cardano;
+CREATE EXTENSION pg_cardano;
