@@ -113,7 +113,7 @@ services:
       - traefik.http.services.koios-${NETWORK}.loadbalancer.server.port=8050
       - traefik.http.middlewares.koios-rewrite-${NETWORK}.replacepathregex.regex=^/(.*)
       - traefik.http.middlewares.koios-rewrite-${NETWORK}.replacepathregex.replacement=/rpc/$1
-      - traefik.http.routers.koios-rewrite-${NETWORK}.middlewares=koios-rewrite-${NETWORK}
+      - traefik.http.routers.koios-${NETWORK}.middlewares=koios-rewrite-${NETWORK}
     networks:
       - default
       - traefik
