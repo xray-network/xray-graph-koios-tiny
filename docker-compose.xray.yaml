@@ -9,7 +9,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
-      - ${POSTGRES_PORT:-5432}:5432
+      - ${POSTGRES_PORT:-127.0.0.1:5432}:5432
     shm_size: 2gb
     volumes:
       - ./config/postgresql/postgresql.${NETWORK}.conf:/etc/postgresql.conf
@@ -33,12 +33,22 @@ services:
         max-size: 400k
         max-file: "20"
     ports:
-      - ${OGMIOS_PORT:-1337}:1337
+      - ${OGMIOS_PORT:-127.0.0.1:1337}:1337
       - ${CARDANO_PORT:-3000}:3000
     volumes:
       - node-db:/db
       - node-ipc:/ipc
     restart: on-failure
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.cardano-node-ogmios-${NETWORK}.rule=Host(`any`) || (Header(`Host-Resolver`,`ogmios/${NETWORK}`) && Header(`Bearer-Resolver`,`${BEARER_RESOLVER_TOKEN}`))
+      - traefik.http.routers.cardano-node-ogmios-${NETWORK}.entrypoints=websecure
+      - traefik.http.routers.cardano-node-ogmios-${NETWORK}.tls=true
+      - traefik.http.routers.cardano-node-ogmios-${NETWORK}.service=cardano-node-ogmios-${NETWORK}
+      - traefik.http.services.cardano-node-ogmios-${NETWORK}.loadbalancer.server.port=1337
+    networks:
+      - default
+      - traefik
 
   cardano-db-sync:
     build:
@@ -90,10 +100,23 @@ services:
       - PGPORT=5432
       - PGRST_DB_URI=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cexplorer}
     ports:
-      - ${KOIOS_PORT:-8050}:8050
+      - ${KOIOS_PORT:-127.0.0.1:8050}:8050
     depends_on:
       - postgres
     restart: on-failure
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.koios-${NETWORK}.rule=Host(`any`) || (Header(`Host-Resolver`,`koios/${NETWORK}`) && Header(`Bearer-Resolver`,`${BEARER_RESOLVER_TOKEN}`))
+      - traefik.http.routers.koios-${NETWORK}.entrypoints=websecure
+      - traefik.http.routers.koios-${NETWORK}.tls=true
+      - traefik.http.routers.koios-${NETWORK}.service=koios-${NETWORK}
+      - traefik.http.services.koios-${NETWORK}.loadbalancer.server.port=8050
+      - traefik.http.middlewares.koios-rewrite-${NETWORK}.replacepathregex.regex=^/(.*)
+      - traefik.http.middlewares.koios-rewrite-${NETWORK}.replacepathregex.replacement=/rpc/$1
+      - traefik.http.routers.koios-${NETWORK}.middlewares=koios-rewrite-${NETWORK}
+    networks:
+      - default
+      - traefik
     logging:
       driver: json-file
       options:
@@ -108,10 +131,20 @@ services:
       - OGMIOS_HOST=cardano-node-ogmios
       - OGMIOS_PORT=1337
     ports:
-      - ${OGMIOS_PROXY_PORT:-8700}:8700
+      - ${OGMIOS_PROXY_PORT:-127.0.0.1:8700}:8700
     depends_on:
       - cardano-node-ogmios
     restart: on-failure
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.ogmios-proxy-${NETWORK}.rule=(Host(`any`) || (Header(`Host-Resolver`,`koios/${NETWORK}`) && Header(`Bearer-Resolver`,`${BEARER_RESOLVER_TOKEN}`))) && (PathPrefix(`/submittx`) || PathPrefix(`/ogmios`))
+      - traefik.http.routers.ogmios-proxy-${NETWORK}.entrypoints=websecure
+      - traefik.http.routers.ogmios-proxy-${NETWORK}.tls=true
+      - traefik.http.routers.ogmios-proxy-${NETWORK}.service=ogmios-proxy-${NETWORK}
+      - traefik.http.services.ogmios-proxy-${NETWORK}.loadbalancer.server.port=8700
+    networks:
+      - default
+      - traefik
     logging:
       driver: json-file
       options:
@@ -123,8 +156,18 @@ services:
       context: .
       target: rapidoc
     ports:
-      - ${RAPIDOC_PORT:-2700}:2700
+      - ${RAPIDOC_PORT:-127.0.0.1:2700}:2700
     restart: on-failure
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.rapidoc-${NETWORK}.rule=(Host(`any`) || (Header(`Host-Resolver`,`koios/${NETWORK}`) && Header(`Bearer-Resolver`,`${BEARER_RESOLVER_TOKEN}`))) && (Path(`/`) || Path(`/openapi.json`))
+      - traefik.http.routers.rapidoc-${NETWORK}.entrypoints=websecure
+      - traefik.http.routers.rapidoc-${NETWORK}.tls=true
+      - traefik.http.routers.rapidoc-${NETWORK}.service=rapidoc-${NETWORK}
+      - traefik.http.services.rapidoc-${NETWORK}.loadbalancer.server.port=2700
+    networks:
+      - default
+      - traefik
     logging:
       driver: json-file
       options:
@@ -136,3 +179,7 @@ volumes:
   node-db:
   node-ipc:
   postgres-data:
+
+networks:
+  traefik:
+    external: true
