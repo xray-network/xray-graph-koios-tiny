@@ -104,11 +104,11 @@ CMD [ "node", "index.js" ]
 #############################################################################################
 ### RAPIDOC ###
 
-FROM node:20 AS rapidoc
+FROM node:20 AS rapidoc-koios
 
 WORKDIR /usr/src/app
 
-COPY rapidoc .
+COPY rapidoc-koios .
 RUN yarn install
 
 EXPOSE 2700/tcp

@@ -118,12 +118,12 @@ services:
         max-size: 200k
         max-file: "10"
 
-  rapidoc:
+  rapidoc-koios:
     build:
       context: .
-      target: rapidoc
+      target: rapidoc-koios
     ports:
-      - ${RAPIDOC_PORT:-2700}:2700
+      - ${RAPIDOC_KOIOS_PORT:-2700}:2700
     restart: on-failure
     logging:
       driver: json-file
