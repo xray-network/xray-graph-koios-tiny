@@ -49,8 +49,17 @@ try {
   parsedData.info.description = extraDescription + parsedData.info.description
 
   // Remove ogmios methods from the JSON
-  delete parsedData.paths["/ogmios"]
-
+  const ogmiosIndex = parsedData.tags.findIndex(tag => tag.name === "Ogmios")
+  if (ogmiosIndex !== -1) {
+    const omgiosObject = parsedData.tags[ogmiosIndex]
+    parsedData.tags.splice(ogmiosIndex, 1)
+    parsedData.tags = [...parsedData.tags, {
+      "name": omgiosObject.name,
+      "description": omgiosObject.description,
+      "x-tag-expanded": false,
+    }]
+  }
+  
   // Convert the modified data back to JSON
   const stringifiedData = JSON.stringify(parsedData, null, 2)
 
