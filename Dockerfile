@@ -99,3 +99,17 @@ RUN yarn install
 
 EXPOSE 8700/tcp
 CMD [ "node", "index.js" ]
+
+
+#############################################################################################
+### RAPIDOC ###
+
+FROM node:20 AS rapidoc
+
+WORKDIR /usr/src/app
+
+COPY rapidoc .
+RUN yarn install
+
+EXPOSE 2700/tcp
+CMD [ "node", "index.js" ]

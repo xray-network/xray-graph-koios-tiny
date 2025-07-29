@@ -100,7 +100,7 @@ services:
       - PGPORT=5432
       - PGRST_DB_URI=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cexplorer}
     ports:
-      - ${KOIOS_TINY_PORT:-127.0.0.1:8050}:8050
+      - ${KOIOS_PORT:-127.0.0.1:8050}:8050
     depends_on:
       - postgres
     restart: on-failure
@@ -131,7 +131,7 @@ services:
       - OGMIOS_HOST=cardano-node-ogmios
       - OGMIOS_PORT=1337
     ports:
-      - ${OGMIOS_TINY_PORT:-127.0.0.1:8700}:8700
+      - ${OGMIOS_PROXY_PORT:-127.0.0.1:8700}:8700
     depends_on:
       - cardano-node-ogmios
     restart: on-failure
@@ -142,6 +142,29 @@ services:
       - traefik.http.routers.ogmios-proxy-${NETWORK}.tls=true
       - traefik.http.routers.ogmios-proxy-${NETWORK}.service=ogmios-proxy-${NETWORK}
       - traefik.http.services.ogmios-proxy-${NETWORK}.loadbalancer.server.port=8700
+    networks:
+      - default
+      - traefik
+    logging:
+      driver: json-file
+      options:
+        max-size: 200k
+        max-file: "10"
+
+  rapidoc:
+    build:
+      context: .
+      target: rapidoc
+    ports:
+      - ${RAPIDOC_PORT:-127.0.0.1:2700}:2700
+    restart: on-failure
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.rapidoc-${NETWORK}.rule=(Host(`any`) || (Header(`Host-Resolver`,`koios/${NETWORK}`) && Header(`Bearer-Resolver`,`${BEARER_RESOLVER_TOKEN}`))) && (Path(`/`) || Path(`/openapi.json`))
+      - traefik.http.routers.rapidoc-${NETWORK}.entrypoints=websecure
+      - traefik.http.routers.rapidoc-${NETWORK}.tls=true
+      - traefik.http.routers.rapidoc-${NETWORK}.service=rapidoc-${NETWORK}
+      - traefik.http.services.rapidoc-${NETWORK}.loadbalancer.server.port=2700
     networks:
       - default
       - traefik
