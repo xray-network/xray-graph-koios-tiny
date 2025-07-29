@@ -3392,34 +3392,6 @@
         "description": "List of datum information for given datum hashes",
         "operationId": "datum_info"
       }
-    },
-    "/ogmios": {
-      "post": {
-        "tags": [
-          "Ogmios"
-        ],
-        "requestBody": {
-          "$ref": "#/components/requestBodies/ogmios"
-        },
-        "responses": {
-          "200": {
-            "description": "Current tip of the chain, identified by a slot and a block header hash.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ogmiostip"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          }
-        },
-        "summary": "Query Example",
-        "description": "Query the current tip of the Network.\n\n<br>\n<div style=\"background-color: #f0f0f0b3; padding: 12px 0px 12px 12px;border-left: 5px solid  rgb(173, 44, 44);font-size: var(--font-size-regular);\">\nWe do support transparent forwarding for various methods from Ogmios, you can read about those <a href=\"#tag--Ogmios\">here</a>.\n</div>\n",
-        "operationId": "ogmios"
-      }
     }
   },
   "components": {

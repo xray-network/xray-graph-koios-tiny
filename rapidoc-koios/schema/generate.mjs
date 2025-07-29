@@ -48,6 +48,9 @@ try {
   // Add extra description to the info section
   parsedData.info.description = extraDescription + parsedData.info.description
 
+  // Remove ogmios methods from the JSON
+  delete parsedData.paths["/ogmios"]
+
   // Convert the modified data back to JSON
   const stringifiedData = JSON.stringify(parsedData, null, 2)
 

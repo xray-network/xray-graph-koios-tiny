@@ -33,42 +33,42 @@ app.use((req, res, next) => {
     }
 })
 
-const allowedOgmiosMethods = [
-  "queryNetwork/blockHeight",
-  "queryNetwork/genesisConfiguration",
-  "queryNetwork/startTime",
-  "queryNetwork/tip",
-  "queryLedgerState/epoch",
-  "queryLedgerState/eraStart",
-  "queryLedgerState/eraSummaries",
-  "queryLedgerState/liveStakeDistribution",
-  "queryLedgerState/protocolParameters",
-  "queryLedgerState/proposedProtocolParameters",
-  "queryLedgerState/stakePools",
-  "submitTransaction",
-  "evaluateTransaction"
-]
+// const allowedOgmiosMethods = [
+//   "queryNetwork/blockHeight",
+//   "queryNetwork/genesisConfiguration",
+//   "queryNetwork/startTime",
+//   "queryNetwork/tip",
+//   "queryLedgerState/epoch",
+//   "queryLedgerState/eraStart",
+//   "queryLedgerState/eraSummaries",
+//   "queryLedgerState/liveStakeDistribution",
+//   "queryLedgerState/protocolParameters",
+//   "queryLedgerState/proposedProtocolParameters",
+//   "queryLedgerState/stakePools",
+//   "submitTransaction",
+//   "evaluateTransaction"
+// ]
 
-router.post("/ogmios", async (req, res) => {
-  const data = req.body
-  try {
-      if (allowedOgmiosMethods.includes(data.method)) {
-        const response = await fetch(`http://${OGMIOS_HOST}:${OGMIOS_PORT}`, {
-          method: 'POST',
-          body: JSON.stringify(data)
-        })
+// router.post("/ogmios", async (req, res) => {
+//   const data = req.body
+//   try {
+//       if (allowedOgmiosMethods.includes(data.method)) {
+//         const response = await fetch(`http://${OGMIOS_HOST}:${OGMIOS_PORT}`, {
+//           method: 'POST',
+//           body: JSON.stringify(data)
+//         })
 
-        const result = await response.json()
-        res.status(200).send(result)
-     } else {
-        res.status(403).send(`Ogmios method "${data.method}" is not allowed in Koios, use full Ogmios node instead`)
-     }
-  }
-  catch (error) {
-    console.log("Submittx ::", new Date().toISOString(), "::", JSON.stringify(error))
-    res.status(400).send(error)
-  }
-})
+//         const result = await response.json()
+//         res.status(200).send(result)
+//      } else {
+//         res.status(403).send(`Ogmios method "${data.method}" is not allowed in Koios, use another Ogmios instance instead`)
+//      }
+//   }
+//   catch (error) {
+//     console.log("Submittx ::", new Date().toISOString(), "::", JSON.stringify(error))
+//     res.status(400).send(error)
+//   }
+// })
 
 router.post("/submittx", async (req, res) => {
   const tx = req.body
