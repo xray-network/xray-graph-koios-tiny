@@ -4588,7 +4588,7 @@
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT",
-        "description": "JWT Bearer Auth token generated via https://koios.rest Profile page. Using this token value allows consumers to use higher limits than public unauthenticated requests."
+        "description": ""
       }
     },
     "schemas": {

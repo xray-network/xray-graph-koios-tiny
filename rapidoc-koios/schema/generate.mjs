@@ -53,6 +53,12 @@ try {
   // Add extra description to the info section
   parsedData.info.description = extraDescription + parsedData.info.description
 
+  // Remove Security Schemes description
+  parsedData.components.securitySchemes.bearerAuth = {
+    ...parsedData.components.securitySchemes.bearerAuth,
+    description: "",
+  }
+
   // Remove ogmios methods from the JSON
   const ogmiosIndex = parsedData.tags.findIndex(tag => tag.name === "Ogmios")
   if (ogmiosIndex !== -1) {
