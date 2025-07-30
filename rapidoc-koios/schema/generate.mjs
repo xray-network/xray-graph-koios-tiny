@@ -3,10 +3,15 @@ import fs from "fs"
 
 const extraDescription = `
   <div style="background: #efefef;padding: 20px 30px;margin-top: 30px;border-left: 5px solid #1940ED;">
-    <div style="font-size:12px; font-weight:bold;margin-bottom:10px;">IMPORTANT INFORMATION</div>
+    <div style="font-size:12px; font-weight:bold;margin-bottom:10px;">DESCRIPTION</div>
     <div>
       <p>XRAY/Graph Koios Tiny is a distributed API service for Cardano, built on the foundation of the open-source Koios API and inspired by the Koios team's exceptional work. It delivers the same reliable schema and data access in a lightweight, horizontally scalable architecture—designed for developers and platforms that need fast, efficient, and redundant access to Cardano blockchain data.</p>
-      <p>For high-traffic applications, we recommend using either the paid XRAY/Graph Koios Tiny service or the original Koios API with an authorization token:</p>
+    </div>
+  </div>
+  <div style="background: #efefef;padding: 20px 30px;margin-top: 30px;border-left: 5px solid #1940ED;">
+    <div style="font-size:12px; font-weight:bold;margin-bottom:10px;">AUTHENTICATION & HIGHER USAGE LIMITS</div>
+    <div>
+      <p>For high-traffic applications, we recommend using the paid XRAY/Graph or original Koios API access (set Authorization header in Authentication section):</p>
       <ul>
         <li>XRAY/Graph: <a href="https://xray.app">https://xray.app</a></li>
         <li>Koios: <a href="https://koios.rest/">https://koios.rest/</a></li>
