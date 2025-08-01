@@ -28,6 +28,12 @@ docker compose -f docker-compose.yaml -p koios-tiny-mainnet up -d --build
 ``` console
 NETWORK=preprod \
 POSTGRES_PASSWORD=your_secret_password \
+POSTGRES_PORT=5433 \
+OGMIOS_PORT=1338 \
+CARDANO_PORT=3001 \
+KOIOS_PORT=8051 \
+OGMIOS_PROXY_PORT=8701 \
+RAPIDOC_KOIOS_PORT=2701 \
 docker compose -f docker-compose.yaml -p koios-tiny-preprod up -d --build
 ```
 
@@ -38,10 +44,77 @@ docker compose -f docker-compose.yaml -p koios-tiny-preprod up -d --build
 ``` console
 NETWORK=preview \
 POSTGRES_PASSWORD=your_secret_password \
+POSTGRES_PORT=5434 \
+OGMIOS_PORT=1339 \
+CARDANO_PORT=3002 \
+KOIOS_PORT=8052 \
+OGMIOS_PROXY_PORT=8702 \
+RAPIDOC_KOIOS_PORT=2702 \
 docker compose -f docker-compose.yaml -p koios-tiny-preview up -d --build
 ```
 
 ## Advanced Usage
+
+<details>
+  <summary><b>Restoring From Snapshot</b></summary>
+
+## Restoring Koios (cardano-db-sync) DB
+
+1. Enter root dir and install some dependencie:
+``` console
+cd xray-graph-koios-tiny \
+sudo apt update && sudo apt install zstd jq wget -y
+```
+
+2. Download snapshot:
+``` console
+wget 'https://share.koios.rest/api/public/dl/xFdZDfM4/dbsync/mainnet-dbsyncsnap-latest.tgz' -O ./snapshot/mainnet-dbsyncsnap-latest.tgz
+```
+
+3. Run docker compose up (clean run):
+``` console
+RESTORE_SNAPSHOT=/snapshots/mainnet-dbsyncsnap-latest.tgz \
+NETWORK=mainnet \
+POSTGRES_PASSWORD=your_secret_password \
+docker compose -f docker-compose.yaml -p koios-tiny-mainnet up -d --build
+```
+
+## Restoring Cardano Node DB
+
+1. Enter root dir and install some dependencie:
+``` console
+cd xray-graph-koios-tiny \
+sudo apt update && sudo apt install zstd jq wget -y
+```
+
+2. Stop cardano-node-ogmios container:
+``` console
+docker stop *container_id*
+```
+
+3. Download lates cardano-node-ogmios db:
+``` console
+wget -c -O - "https://downloads.csnapshots.io/mainnet/$(wget -qO- https://downloads.csnapshots.io/mainnet/mainnet-db-snapshot.json | jq -r .[].file_name)" | zstd -d -c | tar -x -C ./snapshots
+```
+
+4. Get node_db volume id:
+``` console
+docker volume ls
+```
+
+5. Remove cardano-node-ogmios db and copy downloaded:
+```
+sudo rm -rf /var/lib/docker/volume/*cardano-node-ogmios_node_db-volume-id*/_data \
+sudo mv ./snapshots/db /var/lib/docker/volume/*cardano-node-ogmios_node_db-volume-id*/_data
+```
+
+6. Start cardano-node-ogmios container:
+
+``` console
+docker start *container_id*
+```
+
+</details>
 
 <details>
   <summary><b>Updating Git Submodules</b></summary>
