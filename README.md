@@ -167,6 +167,25 @@ Rebuild: `docker compose up -d --build --force-recreate koios-tiny-{network}`.
 
 </details>
 
+<details>
+  <summary><b>Using in Graph Cluster (Traefik Reverse Proxy)</b></summary>
+
+1. Clone and run Traefik:
+``` console
+git clone https://github.com/xray-network/traefik-docker.git \
+&& cd traefik-docker \
+&& docker compose -up d
+```
+
+2. Set `BEARER_RESOLVER_TOKEN` and `docker-compose.xray.yaml`:
+``` console
+NETWORK=mainnet \
+POSTGRES_PASSWORD=your_secret_password \
+BEARER_RESOLVER_TOKEN=your_access_token \
+docker compose -f docker-compose.xray.yaml -p koios-tiny-mainnet up -d --build
+```
+
+</details>
 
 ## Documentation
 
