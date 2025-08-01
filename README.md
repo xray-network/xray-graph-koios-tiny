@@ -1,10 +1,11 @@
 <a href="https://discord.gg/WhZmm46APN"><img alt="Discord" src="https://img.shields.io/discord/852538978946383893?style=for-the-badge&logo=discord&label=Discord&labelColor=%231940ED&color=%233FCB9B"></a>
 
-# XRAY/Graph Koios Tiny — Dockerized Koios (Cardano-Db-Sync) stack
+# XRAY/Graph Koios Tiny — Dockerized Koios (Cardano-Db-Sync)
 
-XRAY/Graph Koios Tiny is a tool for fast and predictable deployment of [Haproxy](https://www.haproxy.org/) (TCP/HTTP Load Balancer), [Koios](https://koios.rest/) (Cardano-Db-Sync) stack in a docker environment. Used in the [XRAY/Graph](https://xray.app/) distributed Cardano API provider.
+XRAY/Graph Koios Tiny is a tool for fast and predictable deployment of [Koios](https://koios.rest/) (Cardano-Db-Sync) stack in a docker environment. Used in the [XRAY/Graph](https://xray.app/) distributed Cardano API provider.
 
 ## Getting Started
+
 ### Prepare Installation
 
 ``` console
@@ -13,70 +14,49 @@ git clone \
   https://github.com/xray-network/xray-graph-koios-tiny.git \
   && cd xray-graph-koios-tiny
 ```
+  
+### MAINNET
+
 ``` console
-cp .env.example .env
+NETWORK=mainnet \
+POSTGRES_PASSWORD=your_secret_password \
+docker compose -f docker-compose.yaml -p koios-tiny-mainnet up -d --build
 ```
   
-### Build and Run via Docker Compose
-
-> You can combine profiles to run multiple networks on the same machine: `docker compose --profile mainnet --profile preprod --profile preview up -d`
-
-<details open>
-  <summary><b>MAINNET</b></summary>
-
-#### Clean Install
-``` console
-docker compose --profile mainnet up -d --build
-```
-
-#### Restore Snapshot
-You can find the latest `cardano-db-sync` snapshot (with the `consumed-tx-out` flag) in the latest Koios release description: https://github.com/cardano-community/koios-artifacts/releases/latest 
+### PREPROD
 
 ``` console
-curl -O --output-dir ./snapshots https://share.koios.rest/api/public/dl/xFdZDfM4/dbsync/mainnet-dbsyncsnap-latest.tgz \
-RESTORE_SNAPSHOT_MAINNET=/snapshots/mainnet-dbsyncsnap-latest.tgz \
-docker compose --profile mainnet up -d --build
+NETWORK=preprod \
+POSTGRES_PASSWORD=your_secret_password \
+docker compose -f docker-compose.yaml -p koios-tiny-preprod up -d --build
 ```
 
 </details>
   
+### PREVIEW
+
+``` console
+NETWORK=preview \
+POSTGRES_PASSWORD=your_secret_password \
+docker compose -f docker-compose.yaml -p koios-tiny-preview up -d --build
+```
+
+## Advanced Usage
+
 <details>
-  <summary><b>PREPROD</b></summary>
+  <summary><b>Updating Git Submodules</b></summary>
 
-``` console
-docker compose --profile preprod up -d --build
-```
-
-</details>
-  
-<details>
-  <summary><b>PREVIEW</b></summary>
-
-``` console
-docker compose --profile preview up -d --build
-```
-
-</details>
-
-### Updating Git Submodules
 If you are upgrading a version, you may have to upgrade all the submodule dependencies
 
 ``` console
 git submodule update --recursive --remote --merge
 ```
 
+</details>
 
-## Documentation
-  
-* Koios (OpenAPI endpoints list) — https://api.koios.rest/
-* Koios — https://koios.rest/
-* Cardano-Db-Sync — https://github.com/IntersectMBO/cardano-db-sync/
-* Ogmios — https://ogmios.dev/
-* Haproxy — https://www.haproxy.org/
+<details>
+  <summary><b>API Status Check</b></summary>
 
-
-## API Status Check
-  
 Raw CURL query examples:
   
 ``` console
@@ -85,31 +65,47 @@ curl 0.0.0.0:8050/rpc/tip
 ``` console
 curl 0.0.0.0:8050/rpc/blocks
 ```
-  
-## TypeScript Client
+
+</details>
+
+<details>
+  <summary><b>TypeScript Client</b></summary>
   
 We recommend to use `cardano-koios-client`. Visit [cardano-koios-client](https://github.com/xray-network/cardano-koios-client) repo for more information.
-  
-## Advanced Usage
- 
+
+</details>
+
 <details>
-  <summary>Postgresql Config</summary>
+  <summary><b>Postgresql Config</b></summary>
   
-Config file (see end of file): [postgresql.conf](https://github.com/xray-network/xray-graph-output/blob/main/config/postgresql/postgresql.conf)<br/>
+Config file (see end of file): [postgresql.conf](https://github.com/xray-network/xray-graph-koios-tiny/blob/main/config/postgresql/postgresql.mainnet.conf)<br/>
 Use https://pgtune.leopard.in.ua/ to tune the database settings
 
 </details>
 
 <details>
-  <summary>Koios Custom RPCs & Cron Tasks</summary>
-
+  <summary><b>Koios Custom RPCs & Cron Tasks</b></summary>
+  
 Place the `.sql` files in the `koios-tiny/extra-rpc` folder to register with Postgrest. Then rebuild the `koios-tiny-{network}` container. Read more at https://postgrest.org/en/stable/references/api.html
 
 Place the .sh files in `koios-tiny/extra-cron-jobs` and edit the `koios-tiny/cron-schedule`. Then rebuild the `koios-tiny-{network}` container.
 
 Rebuild: `docker compose up -d --build --force-recreate koios-tiny-{network}`.
-  
+
 </details>
+
+
+## Documentation
+
+* OpenAPI Schema - https://graph.xray.app/output/services/koios/mainnet/api/v1/
+* XRAY/Graph — https://xray.app/
+* TypeScript Client — https://github.com/xray-network/cardano-koios-client
+* Original Koios — https://koios.rest/
+* Original Koios OpenAPI Schema — https://api.koios.rest/
+* Cardano-Db-Sync — https://github.com/IntersectMBO/cardano-db-sync/
+* Ogmios — https://ogmios.dev/
+* Traefik — https://traefik.io/traefik
+
 
 ## System Requirements
   
