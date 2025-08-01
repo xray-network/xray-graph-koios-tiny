@@ -109,8 +109,8 @@ docker volume ls
 
 5. Remove cardano-node-ogmios db and copy downloaded:
 ```
-sudo rm -rf /var/lib/docker/volume/*cardano-node-ogmios_node_db-volume-id*/_data \
-sudo mv ./snapshots/db /var/lib/docker/volume/*cardano-node-ogmios_node_db-volume-id*/_data
+sudo rm -rf /var/lib/docker/volumes/*cardano-node-ogmios_node_db-volume-id*/_data \
+sudo mv ./snapshots/db /var/lib/docker/volumes/*cardano-node-ogmios_node_db-volume-id*/_data
 ```
 
 6. Start cardano-node-ogmios container:
