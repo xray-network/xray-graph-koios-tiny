@@ -57,13 +57,19 @@ docker compose -f docker-compose.yaml -p koios-tiny-preview up -d --build
 
 <details>
   <summary><b>Restoring From Snapshot</b></summary>
+  
+## Step 0: Installing Dependencies
 
-## Restoring Koios (cardano-db-sync) DB
-
-1. Enter root dir and install some dependencie:
+Installing dependepcies (if needed):
 ``` console
-cd xray-graph-koios-tiny \
 sudo apt update && sudo apt install zstd jq wget -y
+```
+
+## Step 1: Restoring Koios (cardano-db-sync) DB
+
+1. Enter root dir:
+``` console
+cd xray-graph-koios-tiny
 ```
 
 2. Download snapshot:
@@ -79,12 +85,11 @@ POSTGRES_PASSWORD=your_secret_password \
 docker compose -f docker-compose.yaml -p koios-tiny-mainnet up -d --build
 ```
 
-## Restoring Cardano Node DB
+## Step 2: Restoring Cardano Node DB
 
-1. Enter root dir and install some dependencie:
+1. Enter root dir:
 ``` console
-cd xray-graph-koios-tiny \
-sudo apt update && sudo apt install zstd jq wget -y
+cd xray-graph-koios-tiny
 ```
 
 2. Stop cardano-node-ogmios container:
@@ -117,17 +122,6 @@ docker start *container_id*
 </details>
 
 <details>
-  <summary><b>Updating Git Submodules</b></summary>
-
-If you are upgrading a version, you may have to upgrade all the submodule dependencies
-
-``` console
-git submodule update --recursive --remote --merge
-```
-
-</details>
-
-<details>
   <summary><b>API Status Check</b></summary>
 
 Raw CURL query examples:
@@ -151,19 +145,33 @@ We recommend to use `cardano-koios-client`. Visit [cardano-koios-client](https:/
 <details>
   <summary><b>Postgresql Config</b></summary>
   
-Config file (see end of file): [postgresql.conf](https://github.com/xray-network/xray-graph-koios-tiny/blob/main/config/postgresql/postgresql.mainnet.conf)<br/>
+Config files (see end of file): 
+
+- mainnet: config/postgresql/postgresql.mainnet.conf
+- preprod: config/postgresql/postgresql.preprod.conf
+- preview: config/postgresql/postgresql.preview.conf
+
 Use https://pgtune.leopard.in.ua/ to tune the database settings
+
+</details>
+
+<details>
+  <summary><b>Updating Git Submodules</b></summary>
+
+If you are upgrading a version, you may have to upgrade all the submodule dependencies
+
+``` console
+git submodule update --recursive --remote --merge
+```
 
 </details>
 
 <details>
   <summary><b>Koios Custom RPCs & Cron Tasks</b></summary>
   
-Place the `.sql` files in the `koios-tiny/extra-rpc` folder to register with Postgrest. Then rebuild the `koios-tiny-{network}` container. Read more at https://postgrest.org/en/stable/references/api.html
+Place the `.sql` files in the `koios/extra-rpc` folder to register with Postgrest. Place the .sh files in `koios/extra-cron-jobs` and edit the `koios/cron-schedule`.
 
-Place the .sh files in `koios-tiny/extra-cron-jobs` and edit the `koios-tiny/cron-schedule`. Then rebuild the `koios-tiny-{network}` container.
-
-Rebuild: `docker compose up -d --build --force-recreate koios-tiny-{network}`.
+Then you must rebuild container with `--force-rebuild` command.
 
 </details>
 
