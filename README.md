@@ -197,10 +197,9 @@ docker compose -f docker-compose.xray.yaml -p koios-tiny-mainnet up -d --build
 
 ## Documentation
 
-* Rapidoc Playground (OpenAPI Schema) - https://graph.xray.app/output/services/koios/mainnet/api/v1/
-* OpenAPI Schema (JSON) - https://graph.xray.app/output/services/koios/mainnet/api/v1/openapi.json
-* XRAY/Graph — https://xray.app/
-* TypeScript Client — https://github.com/xray-network/cardano-koios-client
+* Koios Rapidoc Playground (OpenAPI Schema) — https://graph.xray.app/output/services/koios/mainnet/api/v1/
+* Koios OpenAPI Schema (JSON) — https://graph.xray.app/output/services/koios/mainnet/api/v1/openapi.json
+* Koios TypeScript Client — https://github.com/xray-network/cardano-koios-client
 * Original Koios — https://koios.rest/
 * Original Koios OpenAPI Schema — https://api.koios.rest/
 * Cardano-Db-Sync — https://github.com/IntersectMBO/cardano-db-sync/
